@@ -28,13 +28,17 @@ SOURCES += \
         mainwindow.cpp \
     bmpfile.cpp \
     bmpfileheader.cpp \
-    bmpimageheader.cpp
+    bmpimageheader.cpp \
+    rectform.cpp
 
 HEADERS += \
         mainwindow.h \
     bmpfile.h \
     bmpfileheader.h \
-    bmpimageheader.h
+    bmpimageheader.h \
+    rectform.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    rectform.ui \
+    rectform.ui

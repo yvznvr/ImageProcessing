@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 #include "bmpfile.h"
+#include "rectform.h"
+#include <QString>
+#include <QVector>
 
 namespace Ui {
 class MainWindow;
@@ -19,10 +22,12 @@ public:
 private slots:
     void on_imageButton_clicked();
     void on_applyButton_clicked();
-
+    void getData(QVector<int>);
 private:
     Ui::MainWindow *ui;
     BmpFile f;
+    RectForm rectForm;
+    QVector<int> vect;
 };
 
 #endif // MAINWINDOW_H

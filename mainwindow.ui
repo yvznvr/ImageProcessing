@@ -94,6 +94,11 @@
             <string>Convert Grayscale</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>Draw Rect</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item>

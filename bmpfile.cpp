@@ -12,6 +12,7 @@ BmpFile::~BmpFile()
     delete[] fileHeader;
     delete[] imageHeader;
     delete[] data;
+    delete[] dataOfManipulated;
 }
 
 void BmpFile::ReadImage(string path)
@@ -53,9 +54,11 @@ void BmpFile::ExportImage(string fileName)
     ofstream out(fileName+".bmp", ios::binary);
     out.write((char*)fH,sizeof(fH));
     out.write((char*)iH,sizeof(iH));
-    BYTE* pointerOfData = data;
-    for(int i=0;i<(int)imageHeader->getBiSizeImage();i++)
+    BYTE* pointerOfData = dataOfManipulated;
+    for(int i=0;i<(int)imageHeader->getBiSizeImage()/3;i++)
     {
+        out.write((char*)pointerOfData,1);
+        out.write((char*)pointerOfData,1);
         out.write((char*)pointerOfData++,1);
     }
     out.close();
@@ -95,6 +98,21 @@ void BmpFile::grayScale(string outName)
     }
 
     ExportImage(outName, dataOfManipulated);
-    delete[] dataOfManipulated;
+}
+
+bool BmpFile::drawRect(int x1, int y1, int x2, int y2)
+{
+    // draw rectangle point of (x1,y1) to (x2,y2)
+    // coordinates start bottom of the picture
+    for(int i=y1; i<y2; i++)
+    {
+        dataOfManipulated[i*imageHeader->getWidth()+x1] = 255;
+        dataOfManipulated[i*imageHeader->getWidth()+x2] = 255;
+    }
+    for(int i=x1; i<x2; i++)
+    {
+        dataOfManipulated[y1*imageHeader->getWidth()+i] = 255;
+        dataOfManipulated[y2*imageHeader->getWidth()+i] = 255;
+    }
 }
 
