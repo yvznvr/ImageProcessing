@@ -72,8 +72,10 @@ void BmpFile::ExportImage(string fileName, BYTE *data)
     out.write((char*)fH,sizeof(fH));
     out.write((char*)iH,sizeof(iH));
     BYTE* pointerOfData = data;
-    for(int i=0;i<(int)imageHeader->getBiSizeImage();i++)
+    for(int i=0;i<(int)imageHeader->getBiSizeImage()/3;i++)
     {
+        out.write((char*)pointerOfData,1);
+        out.write((char*)pointerOfData,1);
         out.write((char*)pointerOfData++,1);
     }
     out.close();
@@ -82,17 +84,14 @@ void BmpFile::ExportImage(string fileName, BYTE *data)
 void BmpFile::grayScale(string outName)
 {
     /* create grayscale image and export it */
-    dataOfManipulated = new BYTE[(fileHeader->getSize()-fileHeader->getOffBits())];
+    dataOfManipulated = new BYTE[imageHeader->getBiSizeImage()/3];
     BYTE mean;
     BYTE *iterator = dataOfManipulated;
-    for(int i=0;i<(int)(imageHeader->getBiSizeImage());i+=3)
+    for(int i=0;i<(int)imageHeader->getBiSizeImage();i+=3)
     {
-        //mean = (data->at(i)*0.299+data->at(i+1)*0.587+data->at(i+2)*0.114);
-        //mean = (data->at(i)+data->at(i+1)+data->at(i+2))/3;
         mean = (data[i]*0.21+data[i+1]*0.72+data[i+2]*0.07);
-        iterator[i] = mean;
-        iterator[i+1] = mean;
-        iterator[i+2] = mean;
+        *iterator = mean;
+        iterator++;
     }
 
     ExportImage(outName, dataOfManipulated);
