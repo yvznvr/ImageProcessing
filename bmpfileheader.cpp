@@ -6,6 +6,11 @@ BmpFileHeader::BmpFileHeader()
 
 }
 
+BmpFileHeader::~BmpFileHeader()
+{
+    delete[] allData;
+}
+
 BmpFileHeader::BmpFileHeader(char *header)
 {
     setFileHeader(header);
@@ -49,14 +54,16 @@ bool BmpFileHeader::isBmp()
     return true;
 }
 
-void BmpFileHeader::getAllHeader(BYTE *data)
+BYTE* BmpFileHeader::getAllHeader()
 {
     // write all header in data array
-    BYTE *temp = data;
+    allData = new BYTE[14];
+    BYTE *temp = allData;
     std::memcpy(temp, &bfType, sizeof(WORD));
     std::memcpy(temp+=sizeof(bfType), &bfSize, sizeof(DWORD));
     std::memcpy(temp+=sizeof(bfSize), &bfReserved1, sizeof(WORD));
     std::memcpy(temp+=sizeof(bfReserved1), &bfReserved2, sizeof(WORD));
     std::memcpy(temp+=sizeof(bfReserved2), &bfOffBits, sizeof(DWORD));
+    return allData;
 }
 

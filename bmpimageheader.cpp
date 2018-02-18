@@ -5,6 +5,11 @@ BmpImageHeader::BmpImageHeader()
 
 }
 
+BmpImageHeader::~BmpImageHeader()
+{
+    delete[] allData;
+}
+
 BmpImageHeader::BmpImageHeader(char *header)
 {
     setImageHeader(header);
@@ -52,10 +57,11 @@ WORD BmpImageHeader::getBitCount()
     return biBitCount;
 }
 
-void BmpImageHeader::getAllHeader(unsigned char *data)
+BYTE* BmpImageHeader::getAllHeader()
 {
     // write all header in data array
-    BYTE *temp = data;
+    allData = new BYTE[40];
+    BYTE *temp = allData;
     std::memcpy(temp, &biSize, sizeof(DWORD));
     std::memcpy(temp+=sizeof(biSize), &biWidth, sizeof(DWORD));
     std::memcpy(temp+=sizeof(biWidth), &biHeight, sizeof(DWORD));
@@ -67,6 +73,7 @@ void BmpImageHeader::getAllHeader(unsigned char *data)
     std::memcpy(temp+=sizeof(biXPelsPerMeter), &biYPelsPerMeter, sizeof(DWORD));
     std::memcpy(temp+=sizeof(biYPelsPerMeter), &biClrUsed, sizeof(DWORD));
     std::memcpy(temp+=sizeof(biClrUsed), &biClrImportant, sizeof(DWORD));
+    return allData;
 }
 
 void BmpImageHeader::setBiBitCount(const WORD &value)

@@ -20,7 +20,9 @@ public:
     void ExportImage(string fileName, BYTE *data);
     void manipuleEt();
     void grayScale(string);
-    bool drawRect(int, int, int, int);
+    void drawRect(int, int, int, int);
+    void drawCircle(float, float, float);
+    void drawEllipse(float,float,float,float);
     BmpFileHeader *fileHeader;
     BmpImageHeader *imageHeader;
 private:

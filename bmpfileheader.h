@@ -12,15 +12,17 @@ class BmpFileHeader
 {
 public:
     BmpFileHeader();
+    ~BmpFileHeader();
     BmpFileHeader(char *);
     void setFileHeader(char *);
     WORD getType();
     DWORD getSize();
     DWORD getOffBits();
     bool isBmp();
-    void getAllHeader(BYTE *);
+    BYTE* getAllHeader();
 
 private:
+    BYTE *allData;
     WORD bfType;
     DWORD bfSize;
     WORD bfReserved1;

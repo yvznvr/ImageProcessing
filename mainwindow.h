@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include "bmpfile.h"
 #include "rectform.h"
+#include "circleform.h"
+#include "ellipseform.h"
 #include <QString>
 #include <QVector>
 
@@ -27,6 +29,8 @@ private:
     Ui::MainWindow *ui;
     BmpFile f;
     RectForm rectForm;
+    CircleForm circleForm;
+    EllipseForm ellipseForm;
     QVector<int> vect;
 };
 

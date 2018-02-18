@@ -99,6 +99,16 @@
             <string>Draw Rect</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>Draw Circle</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Draw Ellipse</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item>

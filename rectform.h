@@ -15,7 +15,6 @@ class RectForm : public QWidget
 public:
     explicit RectForm(QWidget *parent = 0);
     ~RectForm();
-    int x1,y1,x2,y2;
 
 private slots:
     void on_pushButton_clicked();

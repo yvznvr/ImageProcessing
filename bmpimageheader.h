@@ -13,16 +13,18 @@ class BmpImageHeader
 {
 public:
     BmpImageHeader();
+    ~BmpImageHeader();
     BmpImageHeader(char*);
     void setImageHeader(char *);
     DWORD getWidth();
     DWORD getHeight();
     WORD getBitCount();
-    void getAllHeader(unsigned char *);
+    BYTE* getAllHeader();
     void setBiBitCount(const WORD &value);
     DWORD getBiSizeImage() const;
 
 private:
+    BYTE* allData;
     DWORD biSize;
     DWORD biWidth;
     DWORD biHeight;

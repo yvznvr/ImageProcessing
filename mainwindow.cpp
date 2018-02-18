@@ -8,6 +8,7 @@
 #include <QDebug>
 #include <QPushButton>
 #include <QEventLoop>
+#include <ctime>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -34,12 +35,15 @@ void MainWindow::on_applyButton_clicked()
 {
     QString outName = ui->outNameLine->text();
     if(outName.isEmpty()) outName = "output";
+    std::time_t start = std::time(nullptr);
     f.ReadImage(ui->imageLine->text().toUtf8().constData());
     string path = (QDir::currentPath() + "/outputs/" + outName).toUtf8().constData();
     if(ui->comboBox->currentText() == "Convert Grayscale")
     {
+
         f.grayScale(path);
-        //f.ExportImage(path);
+        std::time_t end = std::time(nullptr);
+        qDebug() << "Gecen Sure: " << end-start;
         QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
         ui->image2->setPixmap(im);
     }
@@ -59,12 +63,41 @@ void MainWindow::on_applyButton_clicked()
         QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
         ui->image2->setPixmap(im);
     }
+    else if(ui->comboBox->currentText() == "Draw Circle")
+    {
+        circleForm.show();
+        QObject::connect(&circleForm,SIGNAL(dataReady(QVector<int>)),this,SLOT(getData(QVector<int>)));
+        QPushButton *button = circleForm.findChild<QPushButton*>("pushButton");   // instance of button in toplevel window
+        QEventLoop loop;
+        QObject::connect(button, SIGNAL(clicked(bool)),&loop, SLOT(quit()));
+        loop.exec();    // wait to clicked button
+        circleForm.close();
+        f.grayScale(path);
+        f.drawCircle(vect.at(0),vect.at(1),vect.at(2));
+        vect.clear();
+        f.ExportImage(path);
+        QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
+        ui->image2->setPixmap(im);
+    }
+    else if(ui->comboBox->currentText() == "Draw Ellipse")
+    {   ellipseForm.show();
+        QObject::connect(&ellipseForm,SIGNAL(dataReady(QVector<int>)),this,SLOT(getData(QVector<int>)));
+        QPushButton *button = ellipseForm.findChild<QPushButton*>("pushButton");   // instance of button in toplevel window
+        QEventLoop loop;
+        QObject::connect(button, SIGNAL(clicked(bool)),&loop, SLOT(quit()));
+        loop.exec();    // wait to clicked button
+        ellipseForm.close();
+        f.grayScale(path);
+        f.drawEllipse(vect.at(0),vect.at(1),vect.at(2),vect.at(3));
+        vect.clear();
+        f.ExportImage(path);
+        QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
+        ui->image2->setPixmap(im);
+    }
 }
 
 void MainWindow::getData(QVector<int> vector)
 {
-    vect.append(vector.at(0));
-    vect.append(vector.at(1));
-    vect.append(vector.at(2));
-    vect.append(vector.at(3));
+    for(int i=0; i<vector.size();i++)
+        vect.append(vector.at(i));
 }

@@ -29,16 +29,22 @@ SOURCES += \
     bmpfile.cpp \
     bmpfileheader.cpp \
     bmpimageheader.cpp \
-    rectform.cpp
+    rectform.cpp \
+    circleform.cpp \
+    ellipseform.cpp
 
 HEADERS += \
         mainwindow.h \
     bmpfile.h \
     bmpfileheader.h \
     bmpimageheader.h \
-    rectform.h
+    rectform.h \
+    circleform.h \
+    ellipseform.h
 
 FORMS += \
         mainwindow.ui \
     rectform.ui \
-    rectform.ui
+    rectform.ui \
+    circleform.ui \
+    ellipseform.ui

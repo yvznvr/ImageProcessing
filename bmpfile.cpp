@@ -1,5 +1,7 @@
 #include "bmpfile.h"
 #include <QDebug>
+#include <math.h>
+
 
 BmpFile::BmpFile()
 {
@@ -47,13 +49,9 @@ void BmpFile::ReadImage(string path)
 void BmpFile::ExportImage(string fileName)
 {
     /* combine file header, image header and data in one bmp file */
-    unsigned char fH[14];
-    fileHeader->getAllHeader(fH);
-    unsigned char iH[40];
-    imageHeader->getAllHeader(iH);
     ofstream out(fileName+".bmp", ios::binary);
-    out.write((char*)fH,sizeof(fH));
-    out.write((char*)iH,sizeof(iH));
+    out.write((char*)fileHeader->getAllHeader(),14);
+    out.write((char*)imageHeader->getAllHeader(),40);
     BYTE* pointerOfData = dataOfManipulated;
     for(int i=0;i<(int)imageHeader->getBiSizeImage()/3;i++)
     {
@@ -67,13 +65,9 @@ void BmpFile::ExportImage(string fileName)
 void BmpFile::ExportImage(string fileName, BYTE *data)
 {
     /* combine file header, image header and data in one bmp file */
-    unsigned char fH[14];
-    fileHeader->getAllHeader(fH);
-    unsigned char iH[40];
-    imageHeader->getAllHeader(iH);
     ofstream out(fileName+".bmp", ios::binary);
-    out.write((char*)fH,sizeof(fH));
-    out.write((char*)iH,sizeof(iH));
+    out.write((char*)fileHeader->getAllHeader(),14);
+    out.write((char*)imageHeader->getAllHeader(),40);
     BYTE* pointerOfData = data;
     for(int i=0;i<(int)imageHeader->getBiSizeImage()/3;i++)
     {
@@ -88,19 +82,17 @@ void BmpFile::grayScale(string outName)
 {
     /* create grayscale image and export it */
     dataOfManipulated = new BYTE[imageHeader->getBiSizeImage()/3];
-    BYTE mean;
     BYTE *iterator = dataOfManipulated;
     for(int i=0;i<(int)imageHeader->getBiSizeImage();i+=3)
     {
-        mean = (data[i]*0.21+data[i+1]*0.72+data[i+2]*0.07);
-        *iterator = mean;
+        *iterator = BYTE((data[i]*0.21+data[i+1]*0.72+data[i+2]*0.07));
         iterator++;
     }
 
     ExportImage(outName, dataOfManipulated);
 }
 
-bool BmpFile::drawRect(int x1, int y1, int x2, int y2)
+void BmpFile::drawRect(int x1, int y1, int x2, int y2)
 {
     // draw rectangle point of (x1,y1) to (x2,y2)
     // coordinates start bottom of the picture
@@ -113,6 +105,26 @@ bool BmpFile::drawRect(int x1, int y1, int x2, int y2)
     {
         dataOfManipulated[y1*imageHeader->getWidth()+i] = 255;
         dataOfManipulated[y2*imageHeader->getWidth()+i] = 255;
+    }
+}
+
+void BmpFile::drawCircle(float x, float y, float r)
+{
+    // draw circle point of center is (x,y) and radius is r
+    for(float i=0;i<=2*M_PI;i+=1/r)
+    {
+        dataOfManipulated[(int)(y+(r*sin(i)))*imageHeader->getWidth()+(int)(x+(r*cos(i)))] = 255;
+    }
+}
+
+void BmpFile::drawEllipse(float x, float y, float i, float j)
+{
+    // draw ellipse of center (x,y) and i is
+    float divider = i;  // divider for step size
+    if (i<j) divider=j; // greater radius must be divider
+    for(float k=0;k<=2*M_PI;k+=1/divider)
+    {
+        dataOfManipulated[(int)(y+(j*sin(k)))*imageHeader->getWidth()+(int)(x+(i*cos(k)))] = 255;
     }
 }
 
