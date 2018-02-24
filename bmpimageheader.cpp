@@ -2,7 +2,7 @@
 
 BmpImageHeader::BmpImageHeader()
 {
-
+    allData = new BYTE[40];
 }
 
 BmpImageHeader::~BmpImageHeader()
@@ -17,71 +17,50 @@ BmpImageHeader::BmpImageHeader(char *header)
 
 void BmpImageHeader::setImageHeader(char * header)
 {
-    // seperate content of header
-    char *pointerOfHeader = header;
-    std::memcpy(&biSize, pointerOfHeader, sizeof(DWORD));
-    pointerOfHeader+=sizeof(DWORD);
-    std::memcpy(&biWidth, pointerOfHeader, sizeof(DWORD));
-    pointerOfHeader+=sizeof(DWORD);
-    std::memcpy(&biHeight, pointerOfHeader, sizeof(DWORD));
-    pointerOfHeader+=sizeof(DWORD);
-    std::memcpy(&biPlanes, pointerOfHeader, sizeof(WORD));
-    pointerOfHeader+=sizeof(WORD);
-    std::memcpy(&biBitCount, pointerOfHeader, sizeof(WORD));
-    pointerOfHeader+=sizeof(WORD);
-    std::memcpy(&biCompression, pointerOfHeader, sizeof(DWORD));
-    pointerOfHeader+=sizeof(DWORD);
-    std::memcpy(&biSizeImage, pointerOfHeader, sizeof(DWORD));
-    pointerOfHeader+=sizeof(DWORD);
-    std::memcpy(&biXPelsPerMeter, pointerOfHeader, sizeof(DWORD));
-    pointerOfHeader+=sizeof(DWORD);
-    std::memcpy(&biYPelsPerMeter, pointerOfHeader, sizeof(DWORD));
-    pointerOfHeader+=sizeof(DWORD);
-    std::memcpy(&biClrUsed, pointerOfHeader, sizeof(DWORD));
-    pointerOfHeader+=sizeof(DWORD);
-    std::memcpy(&biClrImportant, pointerOfHeader, sizeof(DWORD));
+    // set header
+    std::memcpy(allData, header, 40);
 }
 
 DWORD BmpImageHeader::getWidth()
 {
+    DWORD biWidth;
+    BYTE *temp = allData + 4;
+    std::memcpy(&biWidth, temp, sizeof(biWidth));
     return biWidth;
 }
 
 DWORD BmpImageHeader::getHeight()
 {
+    DWORD biHeight;
+    BYTE *temp = allData + 8;
+    std::memcpy(&biHeight, temp, sizeof(biHeight));
     return biHeight;
 }
 
 WORD BmpImageHeader::getBitCount()
 {
+    WORD biBitCount;
+    BYTE *temp = allData + 14;
+    std::memcpy(&biBitCount, temp, sizeof(biBitCount));
     return biBitCount;
-}
-
-BYTE* BmpImageHeader::getAllHeader()
-{
-    // write all header in data array
-    allData = new BYTE[40];
-    BYTE *temp = allData;
-    std::memcpy(temp, &biSize, sizeof(DWORD));
-    std::memcpy(temp+=sizeof(biSize), &biWidth, sizeof(DWORD));
-    std::memcpy(temp+=sizeof(biWidth), &biHeight, sizeof(DWORD));
-    std::memcpy(temp+=sizeof(biHeight), &biPlanes, sizeof(WORD));
-    std::memcpy(temp+=sizeof(biPlanes), &biBitCount, sizeof(WORD));
-    std::memcpy(temp+=sizeof(biBitCount), &biCompression, sizeof(DWORD));
-    std::memcpy(temp+=sizeof(biCompression), &biSizeImage, sizeof(DWORD));
-    std::memcpy(temp+=sizeof(biSizeImage), &biXPelsPerMeter, sizeof(DWORD));
-    std::memcpy(temp+=sizeof(biXPelsPerMeter), &biYPelsPerMeter, sizeof(DWORD));
-    std::memcpy(temp+=sizeof(biYPelsPerMeter), &biClrUsed, sizeof(DWORD));
-    std::memcpy(temp+=sizeof(biClrUsed), &biClrImportant, sizeof(DWORD));
-    return allData;
-}
-
-void BmpImageHeader::setBiBitCount(const WORD &value)
-{
-    biBitCount = value;
 }
 
 DWORD BmpImageHeader::getBiSizeImage() const
 {
+    DWORD biSizeImage;
+    BYTE *temp = allData + 20;
+    std::memcpy(&biSizeImage, temp, sizeof(biSizeImage));
     return biSizeImage;
 }
+
+BYTE* BmpImageHeader::getAllHeader()
+{
+    // return pointer of header
+    return allData;
+}
+/*
+void BmpImageHeader::setBiBitCount(const WORD &value)
+{
+    biBitCount = value;
+}
+*/

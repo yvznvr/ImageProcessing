@@ -94,6 +94,7 @@ void MainWindow::on_applyButton_clicked()
         QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
         ui->image2->setPixmap(im);
     }
+
 }
 
 void MainWindow::getData(QVector<int> vector)

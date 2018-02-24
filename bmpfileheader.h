@@ -23,11 +23,6 @@ public:
 
 private:
     BYTE *allData;
-    WORD bfType;
-    DWORD bfSize;
-    WORD bfReserved1;
-    WORD bfReserved2;
-    DWORD bfOffBits;
 };
 
 #endif // BMPFILEHEADER_H

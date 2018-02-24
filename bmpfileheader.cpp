@@ -3,7 +3,7 @@
 
 BmpFileHeader::BmpFileHeader()
 {
-
+    allData = new BYTE[14];
 }
 
 BmpFileHeader::~BmpFileHeader()
@@ -18,31 +18,30 @@ BmpFileHeader::BmpFileHeader(char *header)
 
 void BmpFileHeader::setFileHeader(char* header)
 {
-    /* seperate content of header */
-    char* pointerOfHeader = header;
-    std::memcpy(&bfType, header, sizeof(bfType));
-    pointerOfHeader+=sizeof(bfType);
-    std::memcpy(&bfSize, pointerOfHeader, sizeof(bfSize));
-    pointerOfHeader+=sizeof(bfSize);
-    std::memcpy(&bfReserved1, pointerOfHeader, sizeof(bfReserved1));
-    pointerOfHeader+=sizeof(bfReserved1);
-    std::memcpy(&bfReserved2, pointerOfHeader, sizeof(bfReserved2));
-    pointerOfHeader+=sizeof(bfReserved2);
-    std::memcpy(&bfOffBits, pointerOfHeader, sizeof(bfOffBits));
+    /* set header */
+    std::memcpy(allData, header, 14);
 }
 
 WORD BmpFileHeader::getType()
 {
+    WORD bfType;
+    std::memcpy(&bfType, allData, sizeof(bfType));
     return bfType;
 }
 
 DWORD BmpFileHeader::getSize()
 {
+    DWORD bfSize;
+    BYTE *temp = allData + 2;
+    std::memcpy(&bfSize, temp, sizeof(bfSize));
     return bfSize;
 }
 
 DWORD BmpFileHeader::getOffBits()
 {
+    DWORD bfOffBits;
+    BYTE *temp = allData + 10;
+    std::memcpy(&bfOffBits, temp, sizeof(bfOffBits));
     return bfOffBits;
 }
 
@@ -56,14 +55,7 @@ bool BmpFileHeader::isBmp()
 
 BYTE* BmpFileHeader::getAllHeader()
 {
-    // write all header in data array
-    allData = new BYTE[14];
-    BYTE *temp = allData;
-    std::memcpy(temp, &bfType, sizeof(WORD));
-    std::memcpy(temp+=sizeof(bfType), &bfSize, sizeof(DWORD));
-    std::memcpy(temp+=sizeof(bfSize), &bfReserved1, sizeof(WORD));
-    std::memcpy(temp+=sizeof(bfReserved1), &bfReserved2, sizeof(WORD));
-    std::memcpy(temp+=sizeof(bfReserved2), &bfOffBits, sizeof(DWORD));
+    // return pointer of header
     return allData;
 }
 

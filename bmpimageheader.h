@@ -20,7 +20,7 @@ public:
     DWORD getHeight();
     WORD getBitCount();
     BYTE* getAllHeader();
-    void setBiBitCount(const WORD &value);
+    //void setBiBitCount(const WORD &value);
     DWORD getBiSizeImage() const;
 
 private:
