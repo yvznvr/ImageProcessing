@@ -23,11 +23,19 @@ public:
     void drawRect(int, int, int, int);
     void drawCircle(float, float, float);
     void drawEllipse(float,float,float,float);
+    void maskApply(int maskRow, int maskColumn, float *mask);
+    void zoom(int x1, int y1, int x2, int y2);
     BmpFileHeader *fileHeader;
     BmpImageHeader *imageHeader;
+    void setPadding(int value);
+    BYTE *getData() const;
+    BYTE *getDataOfManipulated() const;
+    void setData(BYTE *value);
+
 private:
     BYTE *data;
     BYTE *dataOfManipulated;
+    int padding = 0;
 };
 
 #endif // BMPFILE_H

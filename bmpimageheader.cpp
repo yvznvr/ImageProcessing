@@ -2,12 +2,10 @@
 
 BmpImageHeader::BmpImageHeader()
 {
-    allData = new BYTE[40];
 }
 
 BmpImageHeader::~BmpImageHeader()
 {
-    delete[] allData;
 }
 
 BmpImageHeader::BmpImageHeader(char *header)
@@ -45,7 +43,7 @@ WORD BmpImageHeader::getBitCount()
     return biBitCount;
 }
 
-DWORD BmpImageHeader::getBiSizeImage() const
+DWORD BmpImageHeader::getBiSizeImage()
 {
     DWORD biSizeImage;
     BYTE *temp = allData + 20;
@@ -53,11 +51,30 @@ DWORD BmpImageHeader::getBiSizeImage() const
     return biSizeImage;
 }
 
+void BmpImageHeader::setSize(DWORD size)
+{
+    BYTE *temp = allData + 20;
+    std::memcpy(temp,&size,4);
+}
+
 BYTE* BmpImageHeader::getAllHeader()
 {
     // return pointer of header
     return allData;
 }
+
+void BmpImageHeader::setWidth(int width)
+{
+    BYTE *pointerOfData = allData + 4;
+    std::memcpy(pointerOfData, &width, 4);
+}
+
+void BmpImageHeader::setHeight(int height)
+{
+    BYTE *pointerOfData = allData + 8;
+    std::memcpy(pointerOfData, &height, 4);
+}
+
 /*
 void BmpImageHeader::setBiBitCount(const WORD &value)
 {

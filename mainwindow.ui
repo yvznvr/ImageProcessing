@@ -20,7 +20,7 @@
       <item>
        <widget class="QLabel" name="image1">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -32,14 +32,14 @@
          <string>Image</string>
         </property>
         <property name="scaledContents">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QLabel" name="image2">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -48,7 +48,7 @@
          <string>Manupilated Image</string>
         </property>
         <property name="scaledContents">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -92,6 +92,16 @@
           <item>
            <property name="text">
             <string>Convert Grayscale</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Zoom</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Gaussian Mask</string>
            </property>
           </item>
           <item>

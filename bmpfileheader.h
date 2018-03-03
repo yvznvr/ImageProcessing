@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <cstdint>
+
 typedef unsigned char BYTE;
 typedef unsigned short WORD;
 typedef uint32_t DWORD;
@@ -20,9 +21,10 @@ public:
     DWORD getOffBits();
     bool isBmp();
     BYTE* getAllHeader();
+    void setSize(DWORD);
 
 private:
-    BYTE *allData;
+    BYTE allData[14];
 };
 
 #endif // BMPFILEHEADER_H

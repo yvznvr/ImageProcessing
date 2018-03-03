@@ -3,12 +3,10 @@
 
 BmpFileHeader::BmpFileHeader()
 {
-    allData = new BYTE[14];
 }
 
 BmpFileHeader::~BmpFileHeader()
 {
-    delete[] allData;
 }
 
 BmpFileHeader::BmpFileHeader(char *header)
@@ -57,5 +55,11 @@ BYTE* BmpFileHeader::getAllHeader()
 {
     // return pointer of header
     return allData;
+}
+
+void BmpFileHeader::setSize(DWORD size)
+{
+    BYTE *temp = allData +2;
+    std::memcpy(temp,&size,4);
 }
 

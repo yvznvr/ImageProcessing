@@ -21,21 +21,13 @@ public:
     WORD getBitCount();
     BYTE* getAllHeader();
     //void setBiBitCount(const WORD &value);
-    DWORD getBiSizeImage() const;
+    void setWidth(int);
+    void setHeight(int);
+    DWORD getBiSizeImage();
+    void setSize(DWORD);
 
 private:
-    BYTE* allData;
-    DWORD biSize;
-    DWORD biWidth;
-    DWORD biHeight;
-    WORD biPlanes;
-    WORD biBitCount;
-    DWORD biCompression;
-    DWORD biSizeImage;
-    DWORD biXPelsPerMeter;
-    DWORD biYPelsPerMeter;
-    DWORD biClrUsed;
-    DWORD biClrImportant;
+    BYTE allData[40];
 };
 
 #endif // BMPIMAGEHEADER_H

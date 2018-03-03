@@ -8,7 +8,6 @@
 #include <QDebug>
 #include <QPushButton>
 #include <QEventLoop>
-#include <ctime>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -35,15 +34,13 @@ void MainWindow::on_applyButton_clicked()
 {
     QString outName = ui->outNameLine->text();
     if(outName.isEmpty()) outName = "output";
-    std::time_t start = std::time(nullptr);
     f.ReadImage(ui->imageLine->text().toUtf8().constData());
     string path = (QDir::currentPath() + "/outputs/" + outName).toUtf8().constData();
+    vect.clear();   // clear old data
     if(ui->comboBox->currentText() == "Convert Grayscale")
     {
 
         f.grayScale(path);
-        std::time_t end = std::time(nullptr);
-        qDebug() << "Gecen Sure: " << end-start;
         QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
         ui->image2->setPixmap(im);
     }
@@ -94,7 +91,30 @@ void MainWindow::on_applyButton_clicked()
         QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
         ui->image2->setPixmap(im);
     }
-
+    else if(ui->comboBox->currentText() == "Gaussian Mask")
+    {
+        float gaussian[9] = {0.25,0.5,0.25,0.5,1,0.5,0.25,0.5,0.25};
+        f.maskApply(3,3, gaussian);
+        QPixmap im(QDir::currentPath() + "/outputs/maske.bmp");
+        ui->image2->setPixmap(im);
+    }
+    else if(ui->comboBox->currentText() == "Zoom")
+    {
+        rectForm.show();
+        QObject::connect(&rectForm,SIGNAL(dataReady(QVector<int>)),this,SLOT(getData(QVector<int>)));
+        QPushButton *button = rectForm.findChild<QPushButton*>("pushButton");   // instance of button in toplevel window
+        QEventLoop loop;
+        QObject::connect(button, SIGNAL(clicked(bool)),&loop, SLOT(quit()));
+        loop.exec();    // wait to clicked button
+        rectForm.close();
+        f.grayScale(path);
+        f.zoom(vect.at(0),vect.at(1),vect.at(2),vect.at(3));
+        vect.clear();   // clear old data
+        //f.ExportImage(path);
+        QPixmap im(QDir::currentPath() + "/outputs/zoom.bmp");
+        ui->image1->setPixmap(im);
+        ui->imageLine->setText(QDir::currentPath() + "/outputs/zoom.bmp");
+    }
 }
 
 void MainWindow::getData(QVector<int> vector)
