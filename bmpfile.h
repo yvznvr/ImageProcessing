@@ -31,6 +31,8 @@ public:
     BYTE *getData() const;
     BYTE *getDataOfManipulated() const;
     void setData(BYTE *value);
+    BYTE* histogramData();
+    void histogramEqualization();
 
 private:
     BYTE *data;

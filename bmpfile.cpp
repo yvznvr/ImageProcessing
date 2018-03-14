@@ -153,7 +153,6 @@ void BmpFile::maskApply(int maskRow, int maskColumn, float *mask)
     BYTE *maskedData = new BYTE[(imageHeader->getHeight()-2)*(imageHeader->getWidth()-2)];
     BYTE sum=0;
 
-
     for(unsigned int h=0;h<imageHeader->getHeight()-2;h++)
     {
         for(unsigned int w=0;w<imageHeader->getWidth()-2;w++)
@@ -233,5 +232,51 @@ void BmpFile::setData(BYTE *value)
 {
     data = new BYTE[sizeof(value)];
     std::memcpy(data,value,sizeof(*value));
+}
+
+BYTE *BmpFile::histogramData()
+{
+    BYTE *histogram = new BYTE[256]();
+    for(unsigned long i=0;i<imageHeader->getBiSizeImage()/3;i++)
+    {
+        histogram[(unsigned long)dataOfManipulated[i]] = histogram[(unsigned long)dataOfManipulated[i]] + 1;
+    }
+    return histogram;
+}
+
+void BmpFile::histogramEqualization()
+{
+    BYTE *histogram = histogramData();  // get histogram
+
+    float normalized[256];
+    // cumulative histogram data
+    for(int i=1;i<256;i++)
+    {
+        normalized[i] = (histogram[i] + normalized[i-1]);
+    }
+
+    float numberOfPixels = imageHeader->getBiSizeImage()/3;
+
+    // find max gray level value
+    int maxGray(0);
+    for (int i=255;i>0;i--)
+    {
+        if(histogram[i])
+        {
+            maxGray = i;
+            break;
+        }
+    }
+
+    // normalize histogram data
+    for (int i=0;i<256;i++)
+        normalized[i] = normalized[i]/numberOfPixels*maxGray;
+
+    // mapping
+    for(int i=0; i<numberOfPixels;i++)
+    {
+        dataOfManipulated[i] = normalized[dataOfManipulated[i]];
+    }
+
 }
 

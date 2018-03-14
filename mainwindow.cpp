@@ -39,8 +39,22 @@ void MainWindow::on_applyButton_clicked()
     vect.clear();   // clear old data
     if(ui->comboBox->currentText() == "Convert Grayscale")
     {
-
         f.grayScale(path);
+        QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
+        ui->image2->setPixmap(im);
+    }
+    else if(ui->comboBox->currentText() == "Histogram")
+    {
+        f.grayScale(path);
+        chartForm.setData(f.histogramData(),256);
+        chartForm.drawPlot();
+        chartForm.show();
+    }
+    if(ui->comboBox->currentText() == "Histogram Equalization")
+    {
+        f.grayScale(path);
+        f.histogramEqualization();
+        f.ExportImage(path);
         QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
         ui->image2->setPixmap(im);
     }
@@ -95,6 +109,13 @@ void MainWindow::on_applyButton_clicked()
     {
         float gaussian[9] = {0.25,0.5,0.25,0.5,1,0.5,0.25,0.5,0.25};
         f.maskApply(3,3, gaussian);
+        QPixmap im(QDir::currentPath() + "/outputs/maske.bmp");
+        ui->image2->setPixmap(im);
+    }
+    else if(ui->comboBox->currentText() == "Laplace Filter")
+    {
+        float laplace[9] = {0,1,0,1,-4,1,0,1,0};
+        f.maskApply(3,3, laplace);
         QPixmap im(QDir::currentPath() + "/outputs/maske.bmp");
         ui->image2->setPixmap(im);
     }

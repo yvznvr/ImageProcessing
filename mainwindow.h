@@ -6,6 +6,7 @@
 #include "rectform.h"
 #include "circleform.h"
 #include "ellipseform.h"
+#include "chartform.h"
 #include <QString>
 #include <QVector>
 
@@ -31,6 +32,7 @@ private:
     RectForm rectForm;
     CircleForm circleForm;
     EllipseForm ellipseForm;
+    ChartForm chartForm;
     QVector<int> vect;
 };
 

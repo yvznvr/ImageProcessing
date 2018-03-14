@@ -119,6 +119,21 @@
             <string>Draw Ellipse</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>Laplace Filter</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Histogram</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Histogram Equalization</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item>

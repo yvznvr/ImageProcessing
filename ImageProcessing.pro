@@ -4,9 +4,9 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui charts
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = ImageProcessing
 TEMPLATE = app
@@ -31,7 +31,9 @@ SOURCES += \
     bmpimageheader.cpp \
     rectform.cpp \
     circleform.cpp \
-    ellipseform.cpp
+    ellipseform.cpp \
+    chartform.cpp \
+    qcustomplot.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -40,11 +42,14 @@ HEADERS += \
     bmpimageheader.h \
     rectform.h \
     circleform.h \
-    ellipseform.h
+    ellipseform.h \
+    chartform.h \
+    qcustomplot.h
 
 FORMS += \
         mainwindow.ui \
     rectform.ui \
     rectform.ui \
     circleform.ui \
-    ellipseform.ui
+    ellipseform.ui \
+    chartform.ui
