@@ -136,6 +136,19 @@ void MainWindow::on_applyButton_clicked()
         ui->image1->setPixmap(im);
         ui->imageLine->setText(QDir::currentPath() + "/outputs/zoom.bmp");
     }
+    else if(ui->comboBox->currentText() == "KMeans")
+    {
+        f.grayScale(path);
+        f.kmeans();
+        QPixmap im(QDir::currentPath() + "/outputs/kmeans.bmp");
+        ui->image2->setPixmap(im);
+    }
+    else if(ui->comboBox->currentText() == "Multi Dimensional KMeans")
+    {
+        f.coloredKmeans();
+        QPixmap im(QDir::currentPath() + "/outputs/kmeans2.bmp");
+        ui->image2->setPixmap(im);
+    }
 }
 
 void MainWindow::getData(QVector<int> vector)

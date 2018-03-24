@@ -134,6 +134,16 @@
             <string>Histogram Equalization</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>KMeans</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Multi Dimensional KMeans</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item>

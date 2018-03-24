@@ -6,6 +6,8 @@
 #include <fstream>
 #include "bmpfileheader.h"
 #include "bmpimageheader.h"
+#include "kmeans.h"
+#include "multidimensionalarray.h"
 
 typedef unsigned char BYTE;
 using namespace std;
@@ -18,6 +20,7 @@ public:
     void ReadImage(string path);
     void ExportImage(string fileName);
     void ExportImage(string fileName, BYTE *data);
+    void ExportColoredImage(string fileName, BYTE *data);
     void manipuleEt();
     void grayScale(string);
     void drawRect(int, int, int, int);
@@ -31,8 +34,10 @@ public:
     BYTE *getData() const;
     BYTE *getDataOfManipulated() const;
     void setData(BYTE *value);
-    BYTE* histogramData();
+    int* histogramData();
     void histogramEqualization();
+    void kmeans();
+    void coloredKmeans();
 
 private:
     BYTE *data;

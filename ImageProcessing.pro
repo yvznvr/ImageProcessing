@@ -33,7 +33,8 @@ SOURCES += \
     circleform.cpp \
     ellipseform.cpp \
     chartform.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    multidimensionalarray.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -44,7 +45,9 @@ HEADERS += \
     circleform.h \
     ellipseform.h \
     chartform.h \
-    qcustomplot.h
+    qcustomplot.h \
+    kmeans.h \
+    multidimensionalarray.h
 
 FORMS += \
         mainwindow.ui \

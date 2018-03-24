@@ -2,7 +2,6 @@
 #include <QDebug>
 #include <math.h>
 
-
 BmpFile::BmpFile()
 {
     fileHeader = new BmpFileHeader;
@@ -29,9 +28,11 @@ void BmpFile::ReadImage(string path)
     file.read(imageTemp, sizeof(imageTemp));
     imageHeader->setImageHeader(imageTemp);
 
-
     if(!fileHeader->isBmp())
+    {
         qDebug() << "Dosya Bmp Degil";
+        return;
+    }
 
     file.seekg(fileHeader->getOffBits()); // seek cursor bayt of start data
     while((imageHeader->getWidth()*3+padding)%4 != 0)   padding++;
@@ -84,6 +85,30 @@ void BmpFile::ExportImage(string fileName, BYTE *data)
     {
         out.write((char*)pointerOfData,1);
         out.write((char*)pointerOfData,1);
+        out.write((char*)pointerOfData++,1);
+        pixelNumber++;
+        if(pixelNumber==imageHeader->getWidth())
+        {
+            BYTE pad = 0;
+            for(int i=0;i<padding;i++) out.write((char*)&pad,1);
+            pixelNumber = 0;
+        }
+    }
+    out.close();
+}
+
+void BmpFile::ExportColoredImage(string fileName, BYTE *data)
+{
+    /* combine file header, image header and data in one bmp file */
+    ofstream out(fileName+".bmp", ios::binary);
+    out.write((char*)fileHeader->getAllHeader(),14);
+    out.write((char*)imageHeader->getAllHeader(),40);
+    BYTE* pointerOfData = data;
+    unsigned int pixelNumber = 0; // for padding
+    for(int i=0;i<(int)imageHeader->getBiSizeImage();i++)
+    {
+        out.write((char*)pointerOfData++,1);
+        out.write((char*)pointerOfData++,1);
         out.write((char*)pointerOfData++,1);
         pixelNumber++;
         if(pixelNumber==imageHeader->getWidth())
@@ -234,28 +259,31 @@ void BmpFile::setData(BYTE *value)
     std::memcpy(data,value,sizeof(*value));
 }
 
-BYTE *BmpFile::histogramData()
+int *BmpFile::histogramData()
 {
-    BYTE *histogram = new BYTE[256]();
-    for(unsigned long i=0;i<imageHeader->getBiSizeImage()/3;i++)
+    int *histogram = new int[256]();
+    for(unsigned long i=0;i<(imageHeader->getHeight()*imageHeader->getWidth());i++)
     {
-        histogram[(unsigned long)dataOfManipulated[i]] = histogram[(unsigned long)dataOfManipulated[i]] + 1;
+        histogram[(unsigned long)dataOfManipulated[i]]++;
     }
     return histogram;
 }
 
 void BmpFile::histogramEqualization()
 {
-    BYTE *histogram = histogramData();  // get histogram
+    int *histogram = histogramData();  // get histogram
 
-    float normalized[256];
+    unsigned int normalized[256];
+    normalized[0] = histogram[0];       // set first element
     // cumulative histogram data
+    int temp = histogram[0];
     for(int i=1;i<256;i++)
     {
+        temp += histogram[i];
         normalized[i] = (histogram[i] + normalized[i-1]);
     }
 
-    float numberOfPixels = imageHeader->getBiSizeImage()/3;
+    float numberOfPixels = imageHeader->getHeight()*imageHeader->getWidth();
 
     // find max gray level value
     int maxGray(0);
@@ -270,13 +298,74 @@ void BmpFile::histogramEqualization()
 
     // normalize histogram data
     for (int i=0;i<256;i++)
-        normalized[i] = normalized[i]/numberOfPixels*maxGray;
+        normalized[i] = normalized[i]/(float)numberOfPixels*maxGray;
 
     // mapping
     for(int i=0; i<numberOfPixels;i++)
     {
         dataOfManipulated[i] = normalized[dataOfManipulated[i]];
     }
+}
 
+void BmpFile::kmeans()
+{
+    constexpr int set = 2;
+    kMeans<int,set> means;
+    int numberOfPixels = imageHeader->getHeight() * imageHeader->getWidth();
+    means.setOrnekSayisi(numberOfPixels);
+    for(int i=0; i<numberOfPixels; i++)
+    {
+        means.setDataList((int)dataOfManipulated[i]);
+    }
+
+    means.initMeans();
+    while(!means.kumele())
+        means.initMeans();
+
+    int colours[set];
+    int pad = 255/(set-1);
+    int color=0;
+    for (int i=0;i<set;i++)
+    {
+        colours[i] = color;
+        color+=pad;
+    }
+
+    //int *colours = means.getMerkez();
+    int *labeledData = means.getetiket();
+    BYTE *buffer = new BYTE[numberOfPixels];
+    for(int i=0;i<numberOfPixels;i++)
+        buffer[i] = colours[labeledData[i]];
+    ExportImage("outputs/kmeans", (BYTE*)buffer);
+    delete[] buffer;
+}
+
+void BmpFile::coloredKmeans()
+{
+    constexpr int set = 2;
+    kMeans<MultiDimensionalArray,set> means;
+    int numberOfPixels = imageHeader->getHeight() * imageHeader->getWidth();
+    means.setOrnekSayisi(numberOfPixels);
+    for(int i=0; i<numberOfPixels*3; i+=3)
+    {
+        MultiDimensionalArray temp(3);
+        int point[3] = {data[i],data[i+1],data[i+2]};
+        temp.append(point);
+        means.setDataList(temp);
+    }
+
+    means.initMeans();
+    while(!means.kumele())
+        means.initMeans();
+
+    int colours[3] = {0,255};
+    int *labeledData = means.getetiket();
+    BYTE *buffer = new BYTE[numberOfPixels];
+    for(int i=0;i<numberOfPixels;i++)
+    {
+        buffer[i] = colours[labeledData[i]];
+    }
+    ExportImage("outputs/kmeans2", (BYTE*)buffer);
+    delete[] buffer;
 }
 
