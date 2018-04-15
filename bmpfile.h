@@ -38,10 +38,13 @@ public:
     void histogramEqualization();
     void kmeans();
     void coloredKmeans();
+    void erosion(int maskRow, int maskColumn, float *mask);
+    void dilation(int maskRow, int maskColumn, float *mask);
 
 private:
     BYTE *data;
     BYTE *dataOfManipulated;
+    BYTE *binaryImage;
     int padding = 0;
 };
 

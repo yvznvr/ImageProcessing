@@ -14,6 +14,7 @@ BmpFile::~BmpFile()
     delete[] imageHeader;
     delete[] data;
     delete[] dataOfManipulated;
+    delete[] binaryImage;
 }
 
 void BmpFile::ReadImage(string path)
@@ -175,7 +176,8 @@ void BmpFile::maskApply(int maskRow, int maskColumn, float *mask)
 {
     // move mask on the image
     grayScale("outputs/output");
-    BYTE *maskedData = new BYTE[(imageHeader->getHeight()-2)*(imageHeader->getWidth()-2)];
+    int size = (imageHeader->getHeight()-2)*(imageHeader->getWidth()-2);
+    BYTE *maskedData = new BYTE[size];
     BYTE sum=0;
 
     for(unsigned int h=0;h<imageHeader->getHeight()-2;h++)
@@ -367,5 +369,57 @@ void BmpFile::coloredKmeans()
     }
     ExportImage("outputs/kmeans2", (BYTE*)buffer);
     delete[] buffer;
+}
+
+void BmpFile::erosion(int maskRow, int maskColumn, float *mask)
+{
+    int size = (imageHeader->getHeight())*(imageHeader->getWidth());
+    BYTE* buffer = new BYTE[size]();
+    int sum=1;
+
+    for(unsigned int h=1;h<imageHeader->getHeight()-1;h++)
+    {
+        for(unsigned int w=1;w<imageHeader->getWidth()-1;w++)
+        {
+            for(int i=0;i<maskColumn;i++)
+            {
+                for(int j=0;j<maskRow;j++)
+                {
+                    sum += mask[i*maskRow+j] && dataOfManipulated[(w+i)+(h+j)*imageHeader->getWidth()];
+                }
+            }
+            int adres = (w)+(h)*(imageHeader->getWidth());
+            if(sum==5)
+                buffer[adres] = 255;
+            sum = 0;
+        }
+    }
+    ExportImage("outputs/kmeans", buffer);
+}
+
+void BmpFile::dilation(int maskRow, int maskColumn, float *mask)
+{
+    int size = (imageHeader->getHeight())*(imageHeader->getWidth());
+    BYTE* buffer = new BYTE[size]();
+    int sum=1;
+
+    for(unsigned int h=1;h<imageHeader->getHeight()-1;h++)
+    {
+        for(unsigned int w=1;w<imageHeader->getWidth()-1;w++)
+        {
+            for(int i=0;i<maskColumn;i++)
+            {
+                for(int j=0;j<maskRow;j++)
+                {
+                    sum += mask[i*maskRow+j] && dataOfManipulated[(w+i)+(h+j)*imageHeader->getWidth()];
+                }
+            }
+            int adres = (w)+(h)*(imageHeader->getWidth());
+            if(sum>1)
+                buffer[adres] = 255;
+            sum = 0;
+        }
+    }
+    ExportImage("outputs/kmeans", buffer);
 }
 

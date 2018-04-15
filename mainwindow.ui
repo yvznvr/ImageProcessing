@@ -66,6 +66,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="leftButton">
+          <property name="text">
+           <string>Slider</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="imageButton">
           <property name="text">
            <string>Select Image</string>
@@ -142,6 +149,16 @@
           <item>
            <property name="text">
             <string>Multi Dimensional KMeans</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Erosion</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Dilation</string>
            </property>
           </item>
          </widget>

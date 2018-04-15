@@ -26,6 +26,8 @@ private slots:
     void on_imageButton_clicked();
     void on_applyButton_clicked();
     void getData(QVector<int>);
+    void on_leftButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     BmpFile f;
@@ -34,6 +36,7 @@ private:
     EllipseForm ellipseForm;
     ChartForm chartForm;
     QVector<int> vect;
+    QString exportPath = "";
 };
 
 #endif // MAINWINDOW_H

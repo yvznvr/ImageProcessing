@@ -40,7 +40,8 @@ void MainWindow::on_applyButton_clicked()
     if(ui->comboBox->currentText() == "Convert Grayscale")
     {
         f.grayScale(path);
-        QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
+        exportPath = QDir::currentPath() + "/outputs/" + outName + ".bmp";
+        QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }
     else if(ui->comboBox->currentText() == "Histogram")
@@ -55,7 +56,8 @@ void MainWindow::on_applyButton_clicked()
         f.grayScale(path);
         f.histogramEqualization();
         f.ExportImage(path);
-        QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
+        exportPath = QDir::currentPath() + "/outputs/" + outName + ".bmp";
+        QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }
     else if(ui->comboBox->currentText() == "Draw Rect")
@@ -71,7 +73,8 @@ void MainWindow::on_applyButton_clicked()
         f.drawRect(vect.at(0),vect.at(1),vect.at(2),vect.at(3));
         vect.clear();   // clear old data
         f.ExportImage(path);
-        QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
+        exportPath = QDir::currentPath() + "/outputs/" + outName + ".bmp";
+        QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }
     else if(ui->comboBox->currentText() == "Draw Circle")
@@ -87,7 +90,8 @@ void MainWindow::on_applyButton_clicked()
         f.drawCircle(vect.at(0),vect.at(1),vect.at(2));
         vect.clear();
         f.ExportImage(path);
-        QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
+        exportPath = QDir::currentPath() + "/outputs/" + outName + ".bmp";
+        QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }
     else if(ui->comboBox->currentText() == "Draw Ellipse")
@@ -102,21 +106,24 @@ void MainWindow::on_applyButton_clicked()
         f.drawEllipse(vect.at(0),vect.at(1),vect.at(2),vect.at(3));
         vect.clear();
         f.ExportImage(path);
-        QPixmap im(QDir::currentPath() + "/outputs/" + outName + ".bmp");
+        exportPath = QDir::currentPath() + "/outputs/" + outName + ".bmp";
+        QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }
     else if(ui->comboBox->currentText() == "Gaussian Mask")
     {
         float gaussian[9] = {0.25,0.5,0.25,0.5,1,0.5,0.25,0.5,0.25};
         f.maskApply(3,3, gaussian);
-        QPixmap im(QDir::currentPath() + "/outputs/maske.bmp");
+        exportPath = QDir::currentPath() + "/outputs/" + "maske.bmp";
+        QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }
     else if(ui->comboBox->currentText() == "Laplace Filter")
     {
         float laplace[9] = {0,1,0,1,-4,1,0,1,0};
         f.maskApply(3,3, laplace);
-        QPixmap im(QDir::currentPath() + "/outputs/maske.bmp");
+        exportPath = QDir::currentPath() + "/outputs/" + "maske.bmp";
+        QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }
     else if(ui->comboBox->currentText() == "Zoom")
@@ -131,22 +138,44 @@ void MainWindow::on_applyButton_clicked()
         f.grayScale(path);
         f.zoom(vect.at(0),vect.at(1),vect.at(2),vect.at(3));
         vect.clear();   // clear old data
-        //f.ExportImage(path);
-        QPixmap im(QDir::currentPath() + "/outputs/zoom.bmp");
-        ui->image1->setPixmap(im);
-        ui->imageLine->setText(QDir::currentPath() + "/outputs/zoom.bmp");
+        //f.ExportImage(path);        
+        exportPath = QDir::currentPath() + "/outputs/" + "zoom.bmp";
+        QPixmap im(exportPath);
+        ui->image2->setPixmap(im);
     }
     else if(ui->comboBox->currentText() == "KMeans")
     {
         f.grayScale(path);
         f.kmeans();
-        QPixmap im(QDir::currentPath() + "/outputs/kmeans.bmp");
+        exportPath = QDir::currentPath() + "/outputs/" + "kmeans.bmp";
+        QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }
     else if(ui->comboBox->currentText() == "Multi Dimensional KMeans")
     {
         f.coloredKmeans();
-        QPixmap im(QDir::currentPath() + "/outputs/kmeans2.bmp");
+        exportPath = QDir::currentPath() + "/outputs/" + "kmeans2.bmp";
+        QPixmap im(exportPath);
+        ui->image2->setPixmap(im);
+    }
+    else if(ui->comboBox->currentText() == "Erosion")
+    {
+        f.grayScale(path);
+        f.kmeans();
+        float mask[9] = {0,1,0,1,1,1,0,1,0};
+        f.erosion(3,3,mask);
+        exportPath = QDir::currentPath() + "/outputs/" + "kmeans.bmp";
+        QPixmap im(exportPath);
+        ui->image2->setPixmap(im);
+    }
+    else if(ui->comboBox->currentText() == "Dilation")
+    {
+        f.grayScale(path);
+        f.kmeans();
+        float mask[9] = {0,1,0,1,1,1,0,1,0};
+        f.dilation(3,3,mask);
+        exportPath = QDir::currentPath() + "/outputs/" + "kmeans.bmp";
+        QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }
 }
@@ -155,4 +184,11 @@ void MainWindow::getData(QVector<int> vector)
 {
     for(int i=0; i<vector.size();i++)
         vect.append(vector.at(i));
+}
+
+void MainWindow::on_leftButton_clicked()
+{
+    if(ui->image2->pixmap()==0) return;
+    ui->image1->setPixmap(*ui->image2->pixmap());
+    ui->imageLine->setText(exportPath);
 }
