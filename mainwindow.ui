@@ -161,6 +161,11 @@
             <string>Dilation</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>Connected Component</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item>

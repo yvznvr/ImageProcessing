@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include "bmpfileheader.h"
 #include "bmpimageheader.h"
 #include "kmeans.h"
@@ -32,7 +33,7 @@ public:
     BmpImageHeader *imageHeader;
     void setPadding(int value);
     BYTE *getData() const;
-    BYTE *getDataOfManipulated() const;
+    BYTE *getGrayImage() const;
     void setData(BYTE *value);
     int* histogramData();
     void histogramEqualization();
@@ -40,12 +41,14 @@ public:
     void coloredKmeans();
     void erosion(int maskRow, int maskColumn, float *mask);
     void dilation(int maskRow, int maskColumn, float *mask);
+    bool in(std::vector<int> &list, int value);
+    int *labeledObjects();
+    void copyDataToBinary();
 
 private:
     BYTE *data;
-    BYTE *dataOfManipulated;
+    BYTE *grayImage;
     BYTE *binaryImage;
     int padding = 0;
 };
-
 #endif // BMPFILE_H

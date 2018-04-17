@@ -160,21 +160,32 @@ void MainWindow::on_applyButton_clicked()
     }
     else if(ui->comboBox->currentText() == "Erosion")
     {
-        f.grayScale(path);
-        f.kmeans();
+//        f.grayScale(path);
+//        f.kmeans();
+        f.copyDataToBinary();
         float mask[9] = {0,1,0,1,1,1,0,1,0};
         f.erosion(3,3,mask);
-        exportPath = QDir::currentPath() + "/outputs/" + "kmeans.bmp";
+        exportPath = QDir::currentPath() + "/outputs/" + "erosion.bmp";
         QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }
     else if(ui->comboBox->currentText() == "Dilation")
     {
-        f.grayScale(path);
-        f.kmeans();
+//        f.grayScale(path);
+//        f.kmeans();
+        f.copyDataToBinary();
         float mask[9] = {0,1,0,1,1,1,0,1,0};
         f.dilation(3,3,mask);
-        exportPath = QDir::currentPath() + "/outputs/" + "kmeans.bmp";
+        exportPath = QDir::currentPath() + "/outputs/" + "dilation.bmp";
+        QPixmap im(exportPath);
+        ui->image2->setPixmap(im);
+    }
+    else if(ui->comboBox->currentText() == "Connected Component")
+    {
+//        f.grayScale(path);
+        f.copyDataToBinary();
+        f.labeledObjects();
+        exportPath = QDir::currentPath() + "/outputs/" + "connected.bmp";
         QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }
@@ -192,3 +203,5 @@ void MainWindow::on_leftButton_clicked()
     ui->image1->setPixmap(*ui->image2->pixmap());
     ui->imageLine->setText(exportPath);
 }
+
+

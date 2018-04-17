@@ -13,7 +13,7 @@ BmpFile::~BmpFile()
     delete[] fileHeader;
     delete[] imageHeader;
     delete[] data;
-    delete[] dataOfManipulated;
+    delete[] grayImage;
     delete[] binaryImage;
 }
 
@@ -56,7 +56,7 @@ void BmpFile::ExportImage(string fileName)
     ofstream out(fileName+".bmp", ios::binary);
     out.write((char*)fileHeader->getAllHeader(),14);
     out.write((char*)imageHeader->getAllHeader(),40);
-    BYTE* pointerOfData = dataOfManipulated;
+    BYTE* pointerOfData = grayImage;
     unsigned int pixelNumber = 0; // for padding
     for(int i=0;i<(int)imageHeader->getBiSizeImage()/3;i++)
     {
@@ -125,8 +125,8 @@ void BmpFile::ExportColoredImage(string fileName, BYTE *data)
 void BmpFile::grayScale(string outName)
 {
     /* create grayscale image and export it */
-    dataOfManipulated = new BYTE[imageHeader->getBiSizeImage()/3];
-    BYTE *iterator = dataOfManipulated;
+    grayImage = new BYTE[imageHeader->getBiSizeImage()/3];
+    BYTE *iterator = grayImage;
     for(int i=0;i<(int)imageHeader->getBiSizeImage();i+=3)
     {
         *iterator = BYTE((data[i]*0.21+data[i+1]*0.72+data[i+2]*0.07));
@@ -142,13 +142,13 @@ void BmpFile::drawRect(int x1, int y1, int x2, int y2)
     // coordinates start bottom of the picture
     for(int i=y1; i<y2; i++)
     {
-        dataOfManipulated[i*imageHeader->getWidth()+x1] = 255;
-        dataOfManipulated[i*imageHeader->getWidth()+x2] = 255;
+        grayImage[i*imageHeader->getWidth()+x1] = 255;
+        grayImage[i*imageHeader->getWidth()+x2] = 255;
     }
     for(int i=x1; i<x2; i++)
     {
-        dataOfManipulated[y1*imageHeader->getWidth()+i] = 255;
-        dataOfManipulated[y2*imageHeader->getWidth()+i] = 255;
+        grayImage[y1*imageHeader->getWidth()+i] = 255;
+        grayImage[y2*imageHeader->getWidth()+i] = 255;
     }
 }
 
@@ -157,7 +157,7 @@ void BmpFile::drawCircle(float x, float y, float r)
     // draw circle point of center is (x,y) and radius is r
     for(float i=0;i<=2*M_PI;i+=1/r)
     {
-        dataOfManipulated[(int)(y+(r*sin(i)))*imageHeader->getWidth()+(int)(x+(r*cos(i)))] = 255;
+        grayImage[(int)(y+(r*sin(i)))*imageHeader->getWidth()+(int)(x+(r*cos(i)))] = 255;
     }
 }
 
@@ -168,7 +168,7 @@ void BmpFile::drawEllipse(float x, float y, float i, float j)
     if (i<j) divider=j; // greater radius must be divider
     for(float k=0;k<=2*M_PI;k+=1/divider)
     {
-        dataOfManipulated[(int)(y+(j*sin(k)))*imageHeader->getWidth()+(int)(x+(i*cos(k)))] = 255;
+        grayImage[(int)(y+(j*sin(k)))*imageHeader->getWidth()+(int)(x+(i*cos(k)))] = 255;
     }
 }
 
@@ -188,7 +188,7 @@ void BmpFile::maskApply(int maskRow, int maskColumn, float *mask)
             {
                 for(int j=0;j<maskRow;j++)
                 {
-                    sum += mask[i*maskRow+j] * dataOfManipulated[(w+i)+(h+j)*imageHeader->getWidth()];
+                    sum += mask[i*maskRow+j] * grayImage[(w+i)+(h+j)*imageHeader->getWidth()];
                 }
             }
             int adres = (w)+(h)*(imageHeader->getWidth()-2);
@@ -221,7 +221,7 @@ void BmpFile::zoom(int x1, int y1, int x2, int y2)
             }
             else
             {
-                buffer[i*width+j] = dataOfManipulated[(y1+(i/2-1))*imageHeader->getWidth()+(x1+(j/2-1))];
+                buffer[i*width+j] = grayImage[(y1+(i/2-1))*imageHeader->getWidth()+(x1+(j/2-1))];
             }
         }
     }
@@ -250,9 +250,9 @@ BYTE *BmpFile::getData() const
     return data;
 }
 
-BYTE *BmpFile::getDataOfManipulated() const
+BYTE *BmpFile::getGrayImage() const
 {
-    return dataOfManipulated;
+    return grayImage;
 }
 
 void BmpFile::setData(BYTE *value)
@@ -266,7 +266,7 @@ int *BmpFile::histogramData()
     int *histogram = new int[256]();
     for(unsigned long i=0;i<(imageHeader->getHeight()*imageHeader->getWidth());i++)
     {
-        histogram[(unsigned long)dataOfManipulated[i]]++;
+        histogram[(unsigned long)grayImage[i]]++;
     }
     return histogram;
 }
@@ -305,7 +305,7 @@ void BmpFile::histogramEqualization()
     // mapping
     for(int i=0; i<numberOfPixels;i++)
     {
-        dataOfManipulated[i] = normalized[dataOfManipulated[i]];
+        grayImage[i] = normalized[grayImage[i]];
     }
 }
 
@@ -317,7 +317,7 @@ void BmpFile::kmeans()
     means.setOrnekSayisi(numberOfPixels);
     for(int i=0; i<numberOfPixels; i++)
     {
-        means.setDataList((int)dataOfManipulated[i]);
+        means.setDataList((int)grayImage[i]);
     }
 
     means.initMeans();
@@ -335,11 +335,10 @@ void BmpFile::kmeans()
 
     //int *colours = means.getMerkez();
     int *labeledData = means.getetiket();
-    BYTE *buffer = new BYTE[numberOfPixels];
+    binaryImage = new BYTE[numberOfPixels];
     for(int i=0;i<numberOfPixels;i++)
-        buffer[i] = colours[labeledData[i]];
-    ExportImage("outputs/kmeans", (BYTE*)buffer);
-    delete[] buffer;
+        binaryImage[i] = colours[labeledData[i]];
+    ExportImage("outputs/kmeans", (BYTE*)binaryImage);
 }
 
 void BmpFile::coloredKmeans()
@@ -362,13 +361,12 @@ void BmpFile::coloredKmeans()
 
     int colours[3] = {0,255};
     int *labeledData = means.getetiket();
-    BYTE *buffer = new BYTE[numberOfPixels];
+    binaryImage = new BYTE[numberOfPixels];
     for(int i=0;i<numberOfPixels;i++)
     {
-        buffer[i] = colours[labeledData[i]];
+        binaryImage[i] = colours[labeledData[i]];
     }
-    ExportImage("outputs/kmeans2", (BYTE*)buffer);
-    delete[] buffer;
+    ExportImage("outputs/kmeans2", (BYTE*)binaryImage);
 }
 
 void BmpFile::erosion(int maskRow, int maskColumn, float *mask)
@@ -385,7 +383,7 @@ void BmpFile::erosion(int maskRow, int maskColumn, float *mask)
             {
                 for(int j=0;j<maskRow;j++)
                 {
-                    sum += mask[i*maskRow+j] && dataOfManipulated[(w+i)+(h+j)*imageHeader->getWidth()];
+                    sum += mask[i*maskRow+j] && binaryImage[(w+i)+(h+j)*imageHeader->getWidth()];
                 }
             }
             int adres = (w)+(h)*(imageHeader->getWidth());
@@ -394,7 +392,7 @@ void BmpFile::erosion(int maskRow, int maskColumn, float *mask)
             sum = 0;
         }
     }
-    ExportImage("outputs/kmeans", buffer);
+    ExportImage("outputs/erosion", buffer);
 }
 
 void BmpFile::dilation(int maskRow, int maskColumn, float *mask)
@@ -411,7 +409,7 @@ void BmpFile::dilation(int maskRow, int maskColumn, float *mask)
             {
                 for(int j=0;j<maskRow;j++)
                 {
-                    sum += mask[i*maskRow+j] && dataOfManipulated[(w+i)+(h+j)*imageHeader->getWidth()];
+                    sum += mask[i*maskRow+j] && binaryImage[(w+i)+(h+j)*imageHeader->getWidth()];
                 }
             }
             int adres = (w)+(h)*(imageHeader->getWidth());
@@ -420,6 +418,77 @@ void BmpFile::dilation(int maskRow, int maskColumn, float *mask)
             sum = 0;
         }
     }
-    ExportImage("outputs/kmeans", buffer);
+    ExportImage("outputs/dilation", buffer);
 }
 
+int *BmpFile::labeledObjects()
+{
+    // return start and end point of all object in array
+    // exp: [ob1.start.x, ob1.start.y, ob1.end.x, ob1.end.y, ...]
+    // (0,0) point is left-bottom of image
+    int imageWidth = imageHeader->getWidth();
+    int imageHeight = imageHeader->getHeight();
+    BYTE buffer[imageHeight*imageWidth];
+    std::memcpy(buffer,binaryImage,sizeof(buffer));
+    int nextLabel = 1; // if necessary what label we writing in matrix
+    for (int i=0;i<imageHeight*imageWidth;i++)
+    {
+        if(buffer[i]<250) continue; // if pixel is background pass it
+        // if left and bottom pixel was not labeled give a new label it
+        else if(i%imageWidth!=0 && buffer[i-1]==0 && buffer[i-imageWidth]==0) buffer[i]=nextLabel++;
+        else
+        {
+            // if left or bottom pixel was labeled give old label it
+            if(buffer[i-imageWidth]==0) buffer[i]=buffer[i-1];
+            else if(buffer[i-1]==0) buffer[i]=buffer[i-imageWidth];
+            else
+            {
+                buffer[i] = buffer[i-imageWidth];
+                continue;
+            }
+        }
+    }
+
+    for (int i=imageHeight*imageWidth;i>-1;i--)
+    {
+        // check label and fix collision labels
+        if(buffer[i-1]<1 || buffer[i]<1) continue;
+        buffer[i-1] = buffer[i];
+    }
+
+//    nextLabel = 1;
+//    for (int i=0;i<imageHeight*imageWidth;i++)
+//    {
+//        // normalize labels
+//        if(buffer[i]<1) continue;
+//    }
+
+    ExportImage("outputs/connected", buffer);
+    for(int i=0;i<imageHeader->getHeight();i++)
+    {
+        for(int j=0; j<imageWidth;j++)
+        {
+            std::cout << (int)buffer[i*imageWidth+j];
+        }
+        std::cout << endl;
+    }
+}
+
+bool BmpFile::in(std::vector<int> &list, int value)
+{
+    if(list.empty()) return false;
+    for(int i=0; i<list.size(); i++)
+    {
+        if (list.at(i) == value)   return true;
+    }
+    return false;
+}
+
+void BmpFile::copyDataToBinary()
+{
+    // copy data to binary and grayscale
+    grayScale("outputs/gray");
+    int size = imageHeader->getHeight()*imageHeader->getWidth();
+    binaryImage = new BYTE[size];
+    std::memcpy(binaryImage, grayImage, size);
+}
