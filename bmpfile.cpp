@@ -375,7 +375,8 @@ void BmpFile::erosion(int maskRow, int maskColumn, float *mask)
     int size = (imageHeader->getHeight())*(imageHeader->getWidth());
     BYTE* buffer = new BYTE[size]();
     int sum=1;
-
+    int numberOfOne=0;
+    for(int i=0;i<maskRow*maskColumn;i++) {if(mask[i]==1) numberOfOne++;} // count number of 1 in mask
     for(unsigned int h=1;h<imageHeader->getHeight()-1;h++)
     {
         for(unsigned int w=1;w<imageHeader->getWidth()-1;w++)
@@ -388,7 +389,7 @@ void BmpFile::erosion(int maskRow, int maskColumn, float *mask)
                 }
             }
             int adres = (w)+(h)*(imageHeader->getWidth());
-            if(sum==5)
+            if(sum==numberOfOne)
                 buffer[adres] = 255;
             sum = 0;
         }
@@ -526,15 +527,24 @@ void BmpFile::findCoor(BYTE *buffer)
         coor.push_back(temp);
     }
 
-    // Draw Rectangle
+    // delete some noisy point from coor vector
+    for(int i=0;i<coor.size();i++)
+    {
+        int *temp = coor.at(i);
+        if((temp[2]-temp[0])*(temp[3]-temp[1])<100)
+        {
+            coor.erase(coor.begin()+i);
+            std::cout << temp[0] << ", " <<temp[1] << " - " << temp[2] << ", " <<temp[3] << endl;
+            delete[] temp;
+            i=0;
+        }
+    }
 
+    // Draw Rectangle
     for(int i=0;i<coor.size();i++)
     {
         drawRect(coor.at(i)[0],coor.at(i)[1],coor.at(i)[2],coor.at(i)[3]);
         std::cout << coor.at(i)[0] << " " << coor.at(i)[1]<< " " <<coor.at(i)[2]<< " " <<coor.at(i)[3]<<endl;
     }
-
-    // delete some noisy point from coor vector
-
     ExportImage("outputs/rect");
 }
