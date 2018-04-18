@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <math.h>
 
+
 BmpFile::BmpFile()
 {
     fileHeader = new BmpFileHeader;
@@ -462,27 +463,18 @@ int *BmpFile::labeledObjects()
 //        // normalize labels
 //        if(buffer[i]<1) continue;
 //    }
-
+    findCoor(buffer);
     ExportImage("outputs/connected", buffer);
-    for(int i=0;i<imageHeader->getHeight();i++)
-    {
-        for(int j=0; j<imageWidth;j++)
-        {
-            std::cout << (int)buffer[i*imageWidth+j];
-        }
-        std::cout << endl;
-    }
+//    for(int i=0;i<imageHeader->getHeight();i++)
+//    {
+//        for(int j=0; j<imageWidth;j++)
+//        {
+//            std::cout << (int)buffer[i*imageWidth+j];
+//        }
+//        std::cout << endl;
+//    }
 }
 
-bool BmpFile::in(std::vector<int> &list, int value)
-{
-    if(list.empty()) return false;
-    for(int i=0; i<list.size(); i++)
-    {
-        if (list.at(i) == value)   return true;
-    }
-    return false;
-}
 
 void BmpFile::copyDataToBinary()
 {
@@ -491,4 +483,60 @@ void BmpFile::copyDataToBinary()
     int size = imageHeader->getHeight()*imageHeader->getWidth();
     binaryImage = new BYTE[size];
     std::memcpy(binaryImage, grayImage, size);
+}
+
+void BmpFile::findCoor(BYTE *buffer)
+{
+    vector<int> labelName;
+    vector<int*> coor;
+    int imageSize = imageHeader->getHeight()*imageHeader->getWidth();
+    for (int i=0;i<imageSize;i++)
+    {
+        // get all label name
+        if(buffer[i]>0)
+        {
+            if(labelName.size()==0) labelName.push_back(buffer[i]);
+            for(int j=0; j<labelName.size();j++)
+            {
+                if(labelName.at(j)==buffer[i]) break;
+                else if(j==labelName.size()-1) labelName.push_back(buffer[i]);
+            }
+        }
+
+    }
+    std::cout << labelName[0] << endl << labelName[1] << endl << labelName[2] << endl;
+    int imageWidth = imageHeader->getWidth();
+    int imageHeight = imageHeader->getHeight();
+    for(int i=0;i<labelName.size();i++)
+    {
+        int *temp = new int[4];
+        temp[0]=0;temp[1]=0;temp[2]=0;temp[3]=0;
+        for(int h=0;h<imageHeight;h++)
+        {
+            for(int w=0;w<imageWidth;w++)
+            {
+                if(buffer[h*imageWidth+w]==labelName.at(i))
+                {
+                    if(temp[0]==0 || temp[1]==0) {temp[0]=w; temp[1]=h;}
+                    if(w<temp[0]) temp[0]=w;
+                    if(h<temp[1]) temp[1]=h;
+                    if(w>temp[2]) temp[2]=w;
+                    if(h>temp[3]) temp[3]=h;
+                }
+            }
+        }
+        coor.push_back(temp);
+    }
+
+    // Draw Rectangle
+
+    for(int i=0;i<coor.size();i++)
+    {
+        drawRect(coor.at(i)[0],coor.at(i)[1],coor.at(i)[2],coor.at(i)[3]);
+        std::cout << coor.at(i)[0] << " " << coor.at(i)[1]<< " " <<coor.at(i)[2]<< " " <<coor.at(i)[3]<<endl;
+    }
+
+    // delete some noisy point from coor vector
+
+    ExportImage("outputs/rect");
 }

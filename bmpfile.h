@@ -41,9 +41,9 @@ public:
     void coloredKmeans();
     void erosion(int maskRow, int maskColumn, float *mask);
     void dilation(int maskRow, int maskColumn, float *mask);
-    bool in(std::vector<int> &list, int value);
     int *labeledObjects();
     void copyDataToBinary();
+    void findCoor(BYTE*);
 
 private:
     BYTE *data;
