@@ -453,26 +453,24 @@ int *BmpFile::labeledObjects()
     for (int i=imageHeight*imageWidth;i>-1;i--)
     {
         // check label and fix collision labels
+        // horizontally
         if(buffer[i-1]<1 || buffer[i]<1) continue;
-        buffer[i-1] = buffer[i];
+        else buffer[i-1] = buffer[i];
     }
 
-//    nextLabel = 1;
-//    for (int i=0;i<imageHeight*imageWidth;i++)
-//    {
-//        // normalize labels
-//        if(buffer[i]<1) continue;
-//    }
+    for(int r=1;r<imageWidth;r++)
+    {
+        for(int h=1;h<imageHeight;h++)
+        {
+            // check label and fix collision labels
+            // vertically
+            if(buffer[h*imageWidth+r]==0 || buffer[(h+1)*imageWidth+r]==0) continue;
+            buffer[(h+1)*imageWidth+r]=buffer[h*imageWidth+r];
+        }
+    }
+
     findCoor(buffer);
     ExportImage("outputs/connected", buffer);
-//    for(int i=0;i<imageHeader->getHeight();i++)
-//    {
-//        for(int j=0; j<imageWidth;j++)
-//        {
-//            std::cout << (int)buffer[i*imageWidth+j];
-//        }
-//        std::cout << endl;
-//    }
 }
 
 
