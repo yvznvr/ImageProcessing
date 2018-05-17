@@ -112,8 +112,12 @@ void MainWindow::on_applyButton_clicked()
     }
     else if(ui->comboBox->currentText() == "Gaussian Mask")
     {
-        float gaussian[9] = {0.25,0.5,0.25,0.5,1,0.5,0.25,0.5,0.25};
-        f.maskApply(3,3, gaussian);
+//        float gaussian[9] = {0.25,0.5,0.25,0.5,1,0.5,0.25,0.5,0.25};
+//        float gaussian[9] = {0.148,0.2434,0.148,0.2434,0.4,0.2434,0.148,0.2424,0.148};
+        float gaussian[25] = {2.0/159,4.0/159,5.0/159,4.0/159,2.0/159,4.0/159,9.0/159,12.0/159,9.0/159,4.0/159,
+                            5.0/159,12.0/159,15.0/159,12.0/159,5.0/159,4.0/159,9.0/159,12.0/159,9.0/159,4.0/159,
+                            2.0/159,4.0/159,5.0/159,4.0/159,2.0/159};
+        f.maskApply(5,5, gaussian);
         exportPath = QDir::currentPath() + "/outputs/" + "maske.bmp";
         QPixmap im(exportPath);
         ui->image2->setPixmap(im);
@@ -160,8 +164,6 @@ void MainWindow::on_applyButton_clicked()
     }
     else if(ui->comboBox->currentText() == "Erosion")
     {
-//        f.grayScale(path);
-//        f.kmeans();
         f.copyDataToBinary();
         float mask[9] = {0,1,0,1,1,1,0,1,0};
         f.erosion(3,3,mask);
@@ -171,8 +173,6 @@ void MainWindow::on_applyButton_clicked()
     }
     else if(ui->comboBox->currentText() == "Dilation")
     {
-//        f.grayScale(path);
-//        f.kmeans();
         f.copyDataToBinary();
         float mask[9] = {0,1,0,1,1,1,0,1,0};
         f.dilation(3,3,mask);
@@ -182,10 +182,24 @@ void MainWindow::on_applyButton_clicked()
     }
     else if(ui->comboBox->currentText() == "Connected Component")
     {
-//        f.grayScale(path);
         f.copyDataToBinary();
         f.labeledObjects();
         exportPath = QDir::currentPath() + "/outputs/" + "connected.bmp";
+        QPixmap im(exportPath);
+        ui->image2->setPixmap(im);
+    }
+    else if(ui->comboBox->currentText() == "Colored Export")
+    {
+        f.drawRectColored(281,59,316,89,255,0,0);
+        f.ExportColoredImage("outputs/colorrect");
+        exportPath = QDir::currentPath() + "/outputs/" + "colorrect.bmp";
+        QPixmap im(exportPath);
+        ui->image2->setPixmap(im);
+    }
+    else if(ui->comboBox->currentText() == "Canny Edge Detection")
+    {
+        f.cannyEdgeDetection();
+        exportPath = QDir::currentPath() + "/outputs/" + "hough.bmp";
         QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }

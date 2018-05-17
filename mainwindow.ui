@@ -98,6 +98,16 @@
          <widget class="QComboBox" name="comboBox">
           <item>
            <property name="text">
+            <string>Canny Edge Detection</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Colored Export</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
             <string>Convert Grayscale</string>
            </property>
           </item>
