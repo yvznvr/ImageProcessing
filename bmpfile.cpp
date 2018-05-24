@@ -63,11 +63,11 @@ void BmpFile::ExportColoredImage(string fileName)
     {
         out.write((char*)pointerOfData++,1);
         pixelNumber++;
-        if(pixelNumber==imageHeader->getWidth())
+        if(pixelNumber>=imageHeader->getWidth()*3)
         {
             BYTE pad = 0;
             for(int i=0;i<padding;i++) out.write((char*)&pad,1);
-            pixelNumber = 0;
+            pixelNumber = 0; i+=padding;
         }
     }
     out.close();
@@ -90,15 +90,19 @@ void BmpFile::cannyEdgeDetection()
     int width = imageHeader->getWidth() - 2;
     int size = height*width;
     float image[size];
-    float derivateOfX[9] = {1,0,-1,2,0,-2,1,0,-1};
-    float derivateOfY[9] = {1,2,1,0,0,0,-1,-2,-1};
+    float derivateOfY[9] = {1,0,-1,2,0,-2,1,0,-1};
+    float derivateOfX[9] = {1,2,1,0,0,0,-1,-2,-1};
     float imageX[size], imageY[size];
     int angle[size], thisAngle;
     grayScale("outputs/output");
     maskApply(grayImage, imageY, 3, 3, derivateOfY);
     maskApply(grayImage, imageX, 3, 3, derivateOfX);
-    int max=0, min=255;
-    int* angleForHough = new int[size];
+    int max=0, min=1020;
+
+    padding = 0;
+    while(((imageHeader->getWidth()-2)*3+padding)%4 != 0)   padding++;
+    imageHeader->setHeight((imageHeader->getHeight()-2));
+    imageHeader->setWidth((imageHeader->getWidth()-2));
 
     // gradiant angle and magnitude
     for(int i=0; i<size; i++)
@@ -106,7 +110,6 @@ void BmpFile::cannyEdgeDetection()
         image[i] = sqrt(pow(imageX[i], 2) + pow(imageY[i], 2));
 //        image[i] = abs(imageX[i]) + abs(imageY[i]);
         thisAngle = (atan2(imageY[i], imageX[i])/M_PI) * 180.0;
-        angleForHough[i] = thisAngle;
 
         if ( ( (thisAngle < 22.5) && (thisAngle > -22.5) ) || (thisAngle > 157.5) || (thisAngle < -157.5) )
             angle[i] = 0;
@@ -120,36 +123,53 @@ void BmpFile::cannyEdgeDetection()
         if(image[i]>max) max = image[i];
     }
 
+    ExportImage("homework2/x", normalize(imageX, size));
+    ExportImage("homework2/y", normalize(imageY, size));
+    ExportImage("homework2/magnitude", normalize(image, size));
+
     // non-max suppression
-//    int directions[8] = {1,0,1,1,0,1,-1,1};
-    int directions[8] = {0,1,1,1,1,0,1,-1};
-    for(int h=0;h<height-1;h++)
+    int directions[8] = {1,0,1,1,0,1,-1,1};
+    for(int h=1;h<height-1;h++)
     {
-        for(int r=0;r<width-1;r++)
+        for(int r=1;r<width-1;r++)
         {
             int ang = angle[h*width+r];
-            if(image[h*width+r]<=image[(h+directions[2*ang+1])*width+r+directions[2*ang]])
-               image[h*width+r] = 0;
+            if(image[h*width+r] == 0) continue;
+//            else if(image[h*width+r]<=image[(h+directions[2*ang+1])*width+r+directions[2*ang]])
+//               image[h*width+r] = 0;
+//            else if(image[h*width+r]<=image[(h-directions[2*ang+1])*width+r-directions[2*ang]])
+//               image[h*width+r] = 0;
+            else if((image[h*width+r]>image[(h+directions[2*ang+1])*width+r+directions[2*ang]]) &&
+                    (image[h*width+r]>image[(h-directions[2*ang+1])*width+r-directions[2*ang]]))
+                continue;
+            else image[h*width+r] = 0;
         }
     }
 
+    ExportImage("homework2/nonmax", normalize(image, size));
+
     // Hysteresis Thresholding
-    int hysteresis = (max-min)*0.15;
+    // int hysteresis = (max-min)*0.15;
+    int hysteresis = 255*0.15;
+
     for (int i=0;i<size;i++)
     {
-        if(image[i]>max-hysteresis) image[i] = max;
-        else if(image[i]<hysteresis) image[i] = 0;
+        if(image[i]>255-hysteresis) image[i] = max;
+        else if(image[i]<min+hysteresis) image[i] = 0;
     }
 
+    ExportImage("homework2/hysteresis", normalize(image, size));
 
     for(int h=0;h<height-1;h++)
     {
         for(int r=0;r<width-1;r++)
         {
-            int ang = 3 - angle[h*width+r];
-            if(image[h*width+r]<=image[(h+directions[2*ang+1])*width+r+directions[2*ang]])
-               image[h*width+r] = 0;
-            else image[h*width+r] = max;
+            int ang = (2 + angle[h*width+r])% 4;
+
+            if(image[h*width+r]==max || image[h*width+r]==0) continue;
+            else if(image[(h+directions[2*ang+1])*width+r+directions[2*ang]]==max)
+               image[h*width+r] = max;
+            else image[h*width+r] = 0;
         }
     }
 
@@ -158,22 +178,20 @@ void BmpFile::cannyEdgeDetection()
     for (int i=0; i<size; i++)
         im[i] = image[i]*255/max;
 
-    padding = 0;
-    while(((imageHeader->getWidth()-2)*3+padding)%4 != 0)   padding++;
-    imageHeader->setHeight((imageHeader->getHeight()-2));
-    imageHeader->setWidth((imageHeader->getWidth()-2));
-    ExportImage("outputs/canny", im);
+//    padding = 0;
+//    while(((imageHeader->getWidth()-2)*3+padding)%4 != 0)   padding++;
+//    imageHeader->setHeight((imageHeader->getHeight()-2));
+//    imageHeader->setWidth((imageHeader->getWidth()-2));
+    ExportImage("homework2/canny", im);
     houghTransform(angle, im);
-    delete[] angleForHough;
+    int a = 5;
 }
 
 void BmpFile::houghTransform(int *ang, BYTE *image)
 {
     int height = imageHeader->getHeight();
     int width = imageHeader->getWidth();
-    int maxLength;
-    if(height>width) maxLength=height*1.42; // 1.42 = 2^1/2
-    else maxLength=width*1.42; // 1.42 = 2^1/2
+    int maxLength = sqrt(pow(height,2)+pow(width,2));
 
     int *houghArray = new int[360*maxLength];
     for (int i=0;i<360*maxLength;i++) houghArray[i]=0;
@@ -187,7 +205,7 @@ void BmpFile::houghTransform(int *ang, BYTE *image)
             if (image[r*width+c] == 255)
             {
                 int tempAngle = realAngle[ang[r*width+c]];
-                int d = abs(c*sin(tempAngle*M_PI/180) + r*cos(tempAngle*M_PI/180));
+                int d = abs(r*sin(tempAngle*M_PI/180) + c*cos(tempAngle*M_PI/180));
                 houghArray[tempAngle+360*d] = houghArray[tempAngle+360*d] + 1;
             }
         }
@@ -199,16 +217,16 @@ void BmpFile::houghTransform(int *ang, BYTE *image)
         for (int c=0; c<360; c++)
         {
             int dist = houghArray[r*360+c];
-            if((dist>500) && c==0) drawLine(0, r+1, 255,0,0);
-            else if((dist>500) && c==90) drawLine(90, r+1, 0,0,255);
+            if((dist>50) && c==0) drawLine(90, r+1, 255,0,0);
+            else if((dist>50) && c==90) drawLine(0, r+1, 0,0,255);
         }
     }
 
     padding = 0;
-    while(((imageHeader->getWidth()-2)*3+padding)%4 != 0)   padding++;
+    while(((imageHeader->getWidth()+2)*3+padding)%4 != 0)   padding++;
     imageHeader->setHeight((imageHeader->getHeight()+2));
     imageHeader->setWidth((imageHeader->getWidth()+2));
-    ExportColoredImage("outputs/hough");
+    ExportColoredImage("homework2/hough");
     delete[] houghArray;
 }
 
@@ -217,19 +235,53 @@ void BmpFile::drawLine(int angle, int distance, int red, int green, int blue)
     int height = imageHeader->getHeight()+2;
     int width = imageHeader->getWidth()+2;
 
-    for(int i=0;i<height;i++)
+//    for(int i=0;i<height;i++)
+//    {
+//        for (int j=0; j<width;j++)
+//        {
+//            int d = abs(j*sin(angle*M_PI/180) + i*cos(angle*M_PI/180));
+//            if(d==distance)
+//            {
+//                data[3*(i*width+j)] = blue;
+//                data[3*(i*width+j)+1] = green;
+//                data[3*(i*width+j)+2] = red;
+//            }
+//        }
+//    }
+
+    if(angle==0)
     {
-        for (int j=0; j<width;j++)
+        for(int i=0;i<width;i++)
         {
-            int d = abs(j*sin(angle*M_PI/180) + i*cos(angle*M_PI/180));
-            if(d==distance)
-            {
-                data[3*(i*width+j)] = blue;
-                data[3*(i*width+j)+1] = green;
-                data[3*(i*width+j)+2] = red;
-            }
+            data[3*(distance*width+i)] = blue;
+            data[3*(distance*width+i)+1] = green;
+            data[3*(distance*width+i)+2] = red;
         }
     }
+    else
+    {
+        for(int i=0;i<height;i++)
+        {
+            data[3*(i*width+distance)] = blue;
+            data[3*(i*width+distance)+1] = green;
+            data[3*(i*width+distance)+2] = red;
+        }
+    }
+}
+
+BYTE *BmpFile::normalize(float *array,int size)
+{
+    // normalize and convert float array to byte array
+    int max=0;
+    for (int i=0;i<size;i++)
+        if(array[i]>max) max=array[i];
+
+    BYTE *im = new BYTE[size];
+    for (int i=0; i<size; i++)
+        im[i] = array[i]*255/max;
+
+    return im;
+
 }
 
 void BmpFile::ExportImage(string fileName)

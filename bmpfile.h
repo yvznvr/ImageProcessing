@@ -51,6 +51,7 @@ public:
     void cannyEdgeDetection();
     void houghTransform(int *ang, BYTE* image);
     void drawLine(int angle, int distance, int red, int green, int blue);
+    BYTE* normalize(float *array, int size);
 private:
     BYTE *data;
     BYTE *grayImage;

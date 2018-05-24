@@ -199,7 +199,7 @@ void MainWindow::on_applyButton_clicked()
     else if(ui->comboBox->currentText() == "Canny Edge Detection")
     {
         f.cannyEdgeDetection();
-        exportPath = QDir::currentPath() + "/outputs/" + "hough.bmp";
+        exportPath = QDir::currentPath() + "/homework2/" + "canny.bmp";
         QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }
