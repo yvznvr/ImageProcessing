@@ -42,9 +42,7 @@ public:
     void coloredKmeans();
     void erosion(int maskRow, int maskColumn, float *mask);
     void dilation(int maskRow, int maskColumn, float *mask);
-    int *labeledObjects();
     void copyDataToBinary();
-    void findCoor(BYTE*);
     void drawRectColored(int x1, int y1, int x2, int y2, int red, int green, int blue);
     void ExportColoredImage(string fileName);
     float euclideanDistance(float *arr1, float *arr2, int size);
