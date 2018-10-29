@@ -1,4 +1,4 @@
-#include "bmpfile.h"
+﻿#include "bmpfile.h"
 #include <QDebug>
 #include <math.h>
 #include <humoments.h>
@@ -93,7 +93,8 @@ void BmpFile::cannyEdgeDetection()
     float derivateOfY[9] = {1,0,-1,2,0,-2,1,0,-1};
     float derivateOfX[9] = {1,2,1,0,0,0,-1,-2,-1};
     float imageX[size], imageY[size];
-    int angle[size], thisAngle;
+    int angle[size];
+    float realAngle[size], thisAngle;
     grayScale("outputs/output");
     maskApply(grayImage, imageY, 3, 3, derivateOfY);
     maskApply(grayImage, imageX, 3, 3, derivateOfX);
@@ -109,6 +110,7 @@ void BmpFile::cannyEdgeDetection()
     {
         image[i] = sqrt(pow(imageX[i], 2) + pow(imageY[i], 2));
         thisAngle = (atan2(imageY[i], imageX[i])/M_PI) * 180.0;
+        realAngle[i] = thisAngle;
 
         if ( ( (thisAngle < 22.5) && (thisAngle > -22.5) ) || (thisAngle > 157.5) || (thisAngle < -157.5) )
             angle[i] = 0;
@@ -144,11 +146,12 @@ void BmpFile::cannyEdgeDetection()
     ExportImage("outputs/nonmax", normalize(image, size));
 
     // Hysteresis Thresholding
-    int hysteresis = 255*0.15;
+
+    int hysteresis = max*0.65;
 
     for (int i=0;i<size;i++)
     {
-        if(image[i]>255-hysteresis) image[i] = max;
+        if(image[i]>max-hysteresis) image[i] = max;
         else if(image[i]<hysteresis) image[i] = 0;
     }
 
@@ -173,7 +176,112 @@ void BmpFile::cannyEdgeDetection()
         im[i] = image[i]*255/max;
 
     ExportImage("outputs/canny", im);
-    houghTransform(angle, im);
+    //houghTransform(angle, im);
+    houghCircle(realAngle, im);
+}
+void BmpFile::houghCircle(float *ang, BYTE *image)
+{
+    const int height = imageHeader->getHeight();
+    const int width = imageHeader->getWidth();
+    const int maxLength = 100;
+//    const int maxLength = sqrt(pow(height,2)+pow(width,2));
+
+    int ***houghArray = new int**[width];
+    for(int i=0;i<width;++i)
+    {
+        houghArray[i]=new int*[height];
+
+        for(int k=0;k<height;++k)
+            houghArray[i][k]=new int[maxLength];
+    }
+
+    for (int r=0; r<maxLength; r++)
+    {
+        for (int x=0; x<width; x++)
+        {
+            for (int y=0; y<height; y++)
+            {
+                houghArray[x][y][r] = 0;
+            }
+        }
+    }
+
+
+    for (int r=0; r<maxLength; r++)
+    {
+        for (int x=0; x<width; x++)
+        {
+            for (int y=0; y<height; y++)
+            {
+                if (image[y*width+x] == 255)
+                {
+                    int x0 = x - r * cos(ang[y*width+x]*M_PI/180);
+                    int y0 = y - r * sin(ang[y*width+x]*M_PI/180);
+                    if(x0<1 || y0<1) continue;
+                    houghArray[x0][y0][r] = houghArray[x0][y0][r] + 1;
+                }
+            }
+        }
+    }
+
+    padding = 0;
+    while(((imageHeader->getWidth()+2)*3+padding)%4 != 0)   padding++;
+    imageHeader->setHeight((imageHeader->getHeight()+2));
+    imageHeader->setWidth((imageHeader->getWidth()+2));
+
+    vector<int*> circles;
+    for (int r=0; r<maxLength; r++)
+    {
+        for (int x=0; x<width; x++)
+        {
+            for (int y=0; y<height; y++)
+            {
+                int dist = houghArray[x][y][r];
+                if(dist>10)
+                {                    
+//                    drawCircle(x,y,r);
+                    int *circle = new int[4];
+                    circle[0] = x; circle[1] = y; circle[2] = r; circle[3] = dist;
+                    if(circles.size()==0) circles.push_back(circle);
+                    else
+                    {
+                        int counter = 0;
+                        for(unsigned int i=0;i<circles.size();i++)
+                        {
+                            if(circle[0]==66 && circle[1]==201 && circle[2]==32 && circle[3]==9)
+                            {
+                                int z = 10;
+                            }
+                            if(sqrt(pow(circles.at(i)[0]-x, 2) + pow(circles.at(i)[1]-y, 2)) > r+circles.at(i)[2])
+                            {
+                                // objects does not collide
+                                counter++;
+                                continue;
+                            }
+                            if(circles.at(i)[3]>dist) break;
+                            else
+                            {
+                                circles.erase(circles.begin()+i);
+                                circles.push_back(circle);
+                                break;
+                            }
+                        }
+                        if(counter==circles.size()) circles.push_back(circle);
+                    }
+                }
+            }
+        }
+    }
+    delete[] houghArray;
+    for(unsigned int i=0;i<circles.size();i++)
+    {
+        int *temp = circles.at(i);
+        drawCircle(temp[0], temp[1], temp[2]);
+        cout<< temp[0] << " " << temp[1] << " " << temp[2] << " " << temp[3] << endl;
+        delete temp;
+    }
+
+    ExportColoredImage("outputs/hough");
 }
 
 void BmpFile::houghTransform(int *ang, BYTE *image)
@@ -229,7 +337,7 @@ void BmpFile::houghTransform(int *ang, BYTE *image)
     imageHeader->setWidth(maxLength);
     padding = 0;
     while(((imageHeader->getWidth())*3+padding)%4 != 0)   padding++;
-    ExportImage("homework2/houghspace",hoArray);
+    ExportImage("outputs/houghspace",hoArray);
 
     delete[] houghArray;
     delete[] hoArray;
@@ -407,9 +515,12 @@ void BmpFile::drawRectColored(int x1, int y1, int x2, int y2, int red , int gree
 void BmpFile::drawCircle(float x, float y, float r)
 {
     // draw circle point of center is (x,y) and radius is r
+    if(x-r<1 || y-r<1) return;
     for(float i=0;i<=2*M_PI;i+=1/r)
     {
-        grayImage[(int)(y+(r*sin(i)))*imageHeader->getWidth()+(int)(x+(r*cos(i)))] = 255;
+        data[(int)(y+(r*sin(i)))*imageHeader->getWidth()*3+(int)(x+(r*cos(i)))*3] = 255;
+        data[(int)(y+(r*sin(i)))*imageHeader->getWidth()*3+(int)(x+(r*cos(i)))*3+1] = 255;
+        data[(int)(y+(r*sin(i)))*imageHeader->getWidth()*3+(int)(x+(r*cos(i)))*3+2] = 255;
     }
 }
 

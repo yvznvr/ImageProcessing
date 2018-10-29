@@ -48,6 +48,7 @@ public:
     float euclideanDistance(float *arr1, float *arr2, int size);
     void cannyEdgeDetection();
     void houghTransform(int *ang, BYTE* image);
+    void houghCircle(float *ang, BYTE* image);
     void drawLine(int angle, int distance, int red, int green, int blue);
     BYTE* normalize(float *array, int size);
 private:

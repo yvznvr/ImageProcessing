@@ -98,6 +98,11 @@
          <widget class="QComboBox" name="comboBox">
           <item>
            <property name="text">
+            <string>Hough Circle</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
             <string>Canny Edge Detection</string>
            </property>
           </item>

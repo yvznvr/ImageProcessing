@@ -89,7 +89,7 @@ void MainWindow::on_applyButton_clicked()
         f.grayScale(path);
         f.drawCircle(vect.at(0),vect.at(1),vect.at(2));
         vect.clear();
-        f.ExportImage(path);
+        f.ExportColoredImage(path);
         exportPath = QDir::currentPath() + "/outputs/" + outName + ".bmp";
         QPixmap im(exportPath);
         ui->image2->setPixmap(im);
@@ -182,6 +182,13 @@ void MainWindow::on_applyButton_clicked()
     {
         f.cannyEdgeDetection();
         exportPath = QDir::currentPath() + "/outputs/" + "canny.bmp";
+        QPixmap im(exportPath);
+        ui->image2->setPixmap(im);
+    }
+    else if(ui->comboBox->currentText() == "Hough Circle")
+    {
+        f.cannyEdgeDetection();
+        exportPath = QDir::currentPath() + "/outputs/" + "hough.bmp";
         QPixmap im(exportPath);
         ui->image2->setPixmap(im);
     }
