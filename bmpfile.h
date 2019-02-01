@@ -51,6 +51,8 @@ public:
     void houghCircle(float *ang, BYTE* image);
     void drawLine(int angle, int distance, int red, int green, int blue);
     BYTE* normalize(float *array, int size);
+    void rlbp(int* shape, int *histogram);
+    float dissimilarity(int *h1, int *h2, int size, int shift);
 private:
     BYTE *data;
     BYTE *grayImage;

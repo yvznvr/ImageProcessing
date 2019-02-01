@@ -183,8 +183,8 @@ void BmpFile::houghCircle(float *ang, BYTE *image)
 {
     const int height = imageHeader->getHeight();
     const int width = imageHeader->getWidth();
-    const int maxLength = 100;
-//    const int maxLength = sqrt(pow(height,2)+pow(width,2));
+    const int maxLength = 300;
+    //const int maxLength = sqrt(pow(height,2)+pow(width,2));
 
     int ***houghArray = new int**[width];
     for(int i=0;i<width;++i)
@@ -245,13 +245,9 @@ void BmpFile::houghCircle(float *ang, BYTE *image)
                     if(circles.size()==0) circles.push_back(circle);
                     else
                     {
-                        int counter = 0;
+                        unsigned int counter = 0;
                         for(unsigned int i=0;i<circles.size();i++)
                         {
-                            if(circle[0]==66 && circle[1]==201 && circle[2]==32 && circle[3]==9)
-                            {
-                                int z = 10;
-                            }
                             if(sqrt(pow(circles.at(i)[0]-x, 2) + pow(circles.at(i)[1]-y, 2)) > r+circles.at(i)[2])
                             {
                                 // objects does not collide
@@ -273,13 +269,56 @@ void BmpFile::houghCircle(float *ang, BYTE *image)
         }
     }
     delete[] houghArray;
+
+
+    #include <fstream>
+//    ofstream outfile;
+//    outfile.open("data");
+    ifstream inpfile;
+    inpfile.open("normaldata");
+    vector<int*> histograms;
+    string s;
+    getline(inpfile,s);
+    int l = stoi(s.c_str());
+    for (int i=0;i<l;i++)
+    {
+        int *arr = new int[59];
+        for(int j=0;j<59;j++)
+        {
+            string value;
+            getline(inpfile,value);
+            arr[j] = stoi(value.c_str());
+        }
+        histograms.push_back(arr);
+    }
+
+
     for(unsigned int i=0;i<circles.size();i++)
     {
         int *temp = circles.at(i);
         drawCircle(temp[0], temp[1], temp[2]);
         cout<< temp[0] << " " << temp[1] << " " << temp[2] << " " << temp[3] << endl;
+        int histogram[59];
+        rlbp(temp, histogram);
+//        for(int j=0;j<59;j++)
+//        {
+//            // save values
+//            outfile << histogram[j] << endl;
+//        }
+
+        for(int j=0;j<l;j++)
+        {
+            float diss = 99999999;
+            for(int s=0;s<59;s++)
+            {
+                int temp = dissimilarity(histogram,histograms.at(j),59, 0);
+                if (temp<diss) diss = temp;
+            }
+            cout << "Fark: " << diss << endl;
+        }
         delete temp;
     }
+//    outfile.close();
 
     ExportColoredImage("outputs/hough");
 }
@@ -382,6 +421,72 @@ BYTE *BmpFile::normalize(float *array,int size)
 
     return im;
 
+}
+
+void BmpFile::rlbp(int * shape, int *histogram)
+{
+    // rotate inverse local binary pattern algorithm
+
+    const uint8_t indexs[59] = {0, 1, 2, 3, 7, 8, 15, 16, 24, 31, 32,
+                            48, 56, 63, 64, 65, 67, 96, 97, 99, 112,
+                            113, 115, 120, 121, 123, 124, 126, 127,
+                            128, 129, 130, 131, 135, 136, 143, 144,
+                            152, 159, 160, 176, 184, 191, 192, 193,
+                            195, 224, 225, 227, 240, 241, 243, 248,
+                            249, 251, 252, 254, 255, 4}; //4 means 59th index
+
+
+    auto index = [](auto *indexs, auto number){
+        for(int i=0;i<59;i++)
+        {
+            if(indexs[i]==number) return i;
+        }
+        return 58;
+    };
+
+    for (int i=0;i<59;i++) histogram[i] = 0;
+
+    int x = shape[0];
+    int y = shape[1];
+    float r = shape[2];
+
+    // following values store points of rectangle that circle be in
+    unsigned int x1 = x - r;
+    unsigned int y1 = y - r;
+    unsigned int x2 = x + r;
+    unsigned int y2 = y + r;
+
+    // directions of values
+    // {x1,y1,x2,y2....x8,y8}
+    int directions[16] = {-1,-1,-1,0,-1,1,0,1,1,1,1,0,1,-1,0,-1};
+    for(unsigned int i=x1;i<x2;i++)
+    {
+        for(unsigned int j=y1;j<y2;j++)
+        {
+            if(sqrt(pow((i - x),2) + pow((j - y),2)) > r) continue;
+            int sum = 0;
+            for(int k=0;k<8;k++)
+            {
+                if(grayImage[i+directions[2*k]+(j+directions[2*k+1])*imageHeader->getWidth()] <
+                        grayImage[i+j*imageHeader->getWidth()]) continue;
+                sum += pow(2,k);
+            }
+            histogram[index(indexs, sum)]++;
+        }
+    }
+}
+
+float BmpFile::dissimilarity(int *h1, int *h2, int size, int shift)
+{
+    // dissimilarity metric with chi-square method
+    float dissimilarity = 0;
+    for(int i=0;i<size;i++)
+    {
+        float temp = pow((h1[i]-h2[(i+shift)%size]),2)/(h1[i]+h2[(i+shift)%size]);
+        if(isnan(temp)) continue;
+        dissimilarity += temp;
+    }
+    return dissimilarity;
 }
 
 void BmpFile::ExportImage(string fileName)
@@ -516,7 +621,7 @@ void BmpFile::drawCircle(float x, float y, float r)
 {
     // draw circle point of center is (x,y) and radius is r
     if(x-r<1 || y-r<1) return;
-    for(float i=0;i<=2*M_PI;i+=1/r)
+    for(float i=1/r;i<=2*M_PI;i+=1/r)
     {
         data[(int)(y+(r*sin(i)))*imageHeader->getWidth()*3+(int)(x+(r*cos(i)))*3] = 255;
         data[(int)(y+(r*sin(i)))*imageHeader->getWidth()*3+(int)(x+(r*cos(i)))*3+1] = 255;
